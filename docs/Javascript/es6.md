@@ -1,8 +1,8 @@
 ---
-title: ES6
+title: ES6 新特性
 ---
 
-# ES6
+# ES6 新特性
 
 本文只是简单概括ES6的一些新特性，想要详细了解，可以参阅[MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_6_support_in_Mozilla) [ES6入门](https://es6.ruanyifeng.com/)
 
@@ -63,3 +63,79 @@ function f(...args){
 }
 f(1,2,3,4,5); //[1, 2, 3, 4, 5]
 ```
+
+## 箭头函数
+
+`ES6`中，箭头函数就是函数的一种简写形式，使用括号包裹参数，跟随一个 `=>`，紧接着是函数体，特别需要注意的是箭头函数是继承当前上下文的`this`关键字。
+
+```
+var add = (a, b) => a + b;
+var show = a => console.log(a);
+var test = (a,b,c) => {console.log(a,b,c);return a+b+c;}
+add(1,1); //2
+show(1); //1
+test(1,1,1); //1 1 1
+```
+
+## 参数默认值
+
+```
+function f(a = 1){
+    console.log(a);
+}
+f(); //1
+f(11); //11
+```
+
+## 迭代器
+
++ `Symbol.iterator` 一个统一的接口，它的作用是使各种数据结构可被便捷的访问。
++ for of 是 ES6 新引入的循环，用于替代 `for..in` 和 `forEach()`。
+
+
+## 类
+
+`ES6`提供了更接近传统语言的写法，引入了`class`这个概念，作为对象的模板。通过`class`关键字，可以定义类，与多数传统语言类似。不过，`ES6`的`class`不是新的对象继承模型，它只是原型链的语法糖表现形式。
+
+```
+class Me {
+  constructor() {
+    console.log("constructor");
+  }
+  study() {
+    console.log('study');
+  }
+}
+
+console.log(typeof Me); //function
+let me = new Me(); //constructor
+me.study(); //study
+```
+
+## Promise 对象
+
+`Promise`是异步编程的一种解决方案。
+
+从语法上说，`Promise` 是一个对象，从它可以获取异步操作的消息。
+Promise异步操作有三种状态：`pending`、`fulfilled`和`rejected`。除了异步操作的结果，任何其他操作都无法改变这个状态。
+`then`方法接收两个函数作为参数，第一个参数是`Promise`执行成功时的回调，第二个参数是 `Promise`执行失败时的回调，两个函数只会有一个被调用。
+
+```
+const p1 = new Promise(function(resolve,reject){
+    resolve('resolve');
+}); 
+const p2 = new Promise(function(resolve,reject){
+    reject('reject');
+});
+p1.then(function(v){  
+    console.log(v); //resolve
+});
+p2.then(function(v){ 
+    console.log(v);
+},
+function(v){
+    console.log(v); //reject
+});
+
+```
+
