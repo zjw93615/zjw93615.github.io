@@ -14,8 +14,6 @@ before_install:
 install:
   - yarn
 script:
-  - ls
-  - pwd
   - yarn docs:build
 deploy:
   provider: pages
