@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ES6 新特性 | 自家小仓库</title>
+    <meta name="generator" content="VuePress 1.9.9">
+    
+    <meta name="description" content="技术文档">
+    
+    <link rel="preload" href="/assets/css/0.styles.893723d0.css" as="style"><link rel="preload" href="/assets/js/app.a307ad3f.js" as="script"><link rel="preload" href="/assets/js/2.733019b2.js" as="script"><link rel="preload" href="/assets/js/7.c3c1caa3.js" as="script"><link rel="prefetch" href="/assets/js/10.07083455.js"><link rel="prefetch" href="/assets/js/11.26085c25.js"><link rel="prefetch" href="/assets/js/12.e78a091a.js"><link rel="prefetch" href="/assets/js/3.64801815.js"><link rel="prefetch" href="/assets/js/4.d12742be.js"><link rel="prefetch" href="/assets/js/5.216cae74.js"><link rel="prefetch" href="/assets/js/6.2d0a63f8.js"><link rel="prefetch" href="/assets/js/8.f883746b.js"><link rel="prefetch" href="/assets/js/9.0846551b.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.893723d0.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><img src="/assets/imgs/logo.png" alt="自家小仓库" class="logo"> <span class="site-name can-hide">自家小仓库</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">
+  首页
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="前端" class="dropdown-title"><span class="title">前端</span> <span class="arrow down"></span></button> <button type="button" aria-label="前端" class="mobile-dropdown-title"><span class="title">前端</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/Javascript/es6.html" aria-current="page" class="nav-link router-link-exact-active router-link-active">
+  Javascript
+</a></li><li class="dropdown-item"><!----> <a href="/杂谈/CSS overflow-anchor属性的一些坑.html" class="nav-link">
+  杂谈
+</a></li></ul></div></div><div class="nav-item"><a href="http://jiawei.space" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  External
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">
+  首页
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="前端" class="dropdown-title"><span class="title">前端</span> <span class="arrow down"></span></button> <button type="button" aria-label="前端" class="mobile-dropdown-title"><span class="title">前端</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/Javascript/es6.html" aria-current="page" class="nav-link router-link-exact-active router-link-active">
+  Javascript
+</a></li><li class="dropdown-item"><!----> <a href="/杂谈/CSS overflow-anchor属性的一些坑.html" class="nav-link">
+  杂谈
+</a></li></ul></div></div><div class="nav-item"><a href="http://jiawei.space" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  External
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>Javascript</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/Javascript/es6.html" aria-current="page" class="active sidebar-link">ES6 新特性</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/Javascript/es6.html#let-与-const" class="sidebar-link">let 与 const</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#解构赋值" class="sidebar-link">解构赋值</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#symbol" class="sidebar-link">Symbol</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#spread-rest-操作符" class="sidebar-link">Spread / Rest 操作符</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#箭头函数" class="sidebar-link">箭头函数</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#参数默认值" class="sidebar-link">参数默认值</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#迭代器" class="sidebar-link">迭代器</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#类" class="sidebar-link">类</a></li><li class="sidebar-sub-header"><a href="/Javascript/es6.html#promise-对象" class="sidebar-link">Promise 对象</a></li></ul></li><li><a href="/Javascript/原型与原型链.html" class="sidebar-link">原型与原型链</a></li></ul></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="es6-新特性"><a href="#es6-新特性" class="header-anchor">#</a> ES6 新特性</h1> <p>本文只是简单概括ES6的一些新特性，想要详细了解，可以参阅<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_6_support_in_Mozilla" target="_blank" rel="noopener noreferrer">MDN<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> <a href="https://es6.ruanyifeng.com/" target="_blank" rel="noopener noreferrer">ES6入门<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></p> <p>ECMAScript 6.0（以下简称ES6）是JavaScript语言的下一代标准，已经在2015年6月正式发布了。它的目标，是使得JavaScript语言可以用来编写复杂的大型应用程序，成为企业级开发语言。</p> <h2 id="let-与-const"><a href="#let-与-const" class="header-anchor">#</a> let 与 const</h2> <p><code>ES2015(ES6)</code>新增加了两个重要的<code>JavaScript</code>关键字: <code>let</code>和<code>const</code>。 <code>ES6</code>明确规定，代码块内如果存在<code>let</code>或者<code>const</code>，代码块会对这些命令声明的变量从块的开始就形成一个<strong>封闭作用域</strong>。代码块内，在<strong>声明变量之前</strong>使用它会<strong>报错</strong>，称为<strong>暂时性死区</strong>。 <code>ES6</code>的块级作用域必须有大括号，如果没有大括号，<code>JavaScript</code>引擎就认为不存在块级作用域。</p> <ul><li><code>let</code>和<code>const</code>只能声明一次，<code>var</code>可以声明多次。</li> <li><code>var</code>会变量提升，<code>let</code>与<code>const</code>也存在变量提升但有所不同。</li> <li><code>const</code>声明一个只读的常量，一旦声明，常量的值就不能改变。</li> <li><code>const</code>和<code>let</code>在全局作用域中声明的变量不会挂载到<code>window</code>上。</li> <li><code>let</code>和<code>const</code>声明的变量只在其声明所在的代码块内有效，形成块级作用域。</li> <li><code>const</code>其实保证的不是变量的值不变，而是保证变量指向的内存地址所保存的数据不允许改动。对于基本数据类型<code>number、string 、boolean</code>等，值就保存在变量指向的那个内存地址，因此<code>const</code> 声明的简单类型变量等同于常量。而引用类型<code>object，array，function</code>等，变量指向的内存地址其实是保存了一个指向实际数据的指针，所以<code>const</code>只能保证指针是固定的，至于指针指向的数据结构变不变就无法控制了。</li></ul> <h2 id="解构赋值"><a href="#解构赋值" class="header-anchor">#</a> 解构赋值</h2> <p><code>ES6</code>允许按照一定模式，从数组和对象中提取值，对变量进行赋值，这被称为解构赋值。</p> <div class="language- extra-class"><pre class="language-text"><code>let [a, b, c] = [1, 2, 3]; // 基本
+let [a, [[b], c]] = [1, [[2], 3]]; //嵌套
+let [a, , b] = [1, 2, 3]; // 可忽略
+let [a = 1, b] = []; // a = 1, b = undefined // 不完全解构
+let [a, ...b] = [1, 2, 3]; // 剩余运算符
+let [a, b, c, d, e] = 'hello'; // 字符串等
+let { a, b } = { a: 'aaa', b: 'bbb' }; // 对象模型的解构 前后两个kay需对应
+</code></pre></div><h2 id="symbol"><a href="#symbol" class="header-anchor">#</a> Symbol</h2> <p><code>ES6</code>引入了一种新的原始数据类型<code>Symbol</code>，表示独一无二的值，最大的用法是用来定义对象的唯一属性名。 <code>ES6</code>数据类型除了<code>Number</code>、<code>String</code>、<code>Boolean</code>、 <code>Object</code>、<code>null</code>和<code>undefined</code>，还新增了 <code>Symbol</code>。</p> <div class="language- extra-class"><pre class="language-text"><code>let s1 = Symbol(&quot;s&quot;);
+let s2 = Symbol(&quot;s&quot;);
+console.log(s1 === s2); //false
+</code></pre></div><h2 id="spread-rest-操作符"><a href="#spread-rest-操作符" class="header-anchor">#</a> Spread / Rest 操作符</h2> <p><code>Spread</code> 用于将数组作为参数直接传入函数。</p> <div class="language- extra-class"><pre class="language-text"><code>var s = ['1', '2', '3'];
+function f(s1,s2,s3){
+    console.log(`Hello ${s1},${s2},${s3}`); //ES6新增字符串中加入变量和表达式
+}
+f(...s); //Hello 1,2,3
+</code></pre></div><p><code>Rest</code> 用于函数传参传递数组。</p> <div class="language- extra-class"><pre class="language-text"><code>function f(...args){
+    console.log(args);
+}
+f(1,2,3,4,5); //[1, 2, 3, 4, 5]
+</code></pre></div><h2 id="箭头函数"><a href="#箭头函数" class="header-anchor">#</a> 箭头函数</h2> <p><code>ES6</code>中，箭头函数就是函数的一种简写形式，使用括号包裹参数，跟随一个 <code>=&gt;</code>，紧接着是函数体，特别需要注意的是箭头函数是继承当前上下文的<code>this</code>关键字。</p> <div class="language- extra-class"><pre class="language-text"><code>var add = (a, b) =&gt; a + b;
+var show = a =&gt; console.log(a);
+var test = (a,b,c) =&gt; {console.log(a,b,c);return a+b+c;}
+add(1,1); //2
+show(1); //1
+test(1,1,1); //1 1 1
+</code></pre></div><h2 id="参数默认值"><a href="#参数默认值" class="header-anchor">#</a> 参数默认值</h2> <div class="language- extra-class"><pre class="language-text"><code>function f(a = 1){
+    console.log(a);
+}
+f(); //1
+f(11); //11
+</code></pre></div><h2 id="迭代器"><a href="#迭代器" class="header-anchor">#</a> 迭代器</h2> <ul><li><code>Symbol.iterator</code> 一个统一的接口，它的作用是使各种数据结构可被便捷的访问。</li> <li>for of 是 ES6 新引入的循环，用于替代 <code>for..in</code> 和 <code>forEach()</code>。</li></ul> <h2 id="类"><a href="#类" class="header-anchor">#</a> 类</h2> <p><code>ES6</code>提供了更接近传统语言的写法，引入了<code>class</code>这个概念，作为对象的模板。通过<code>class</code>关键字，可以定义类，与多数传统语言类似。不过，<code>ES6</code>的<code>class</code>不是新的对象继承模型，它只是原型链的语法糖表现形式。</p> <div class="language- extra-class"><pre class="language-text"><code>class Me {
+  constructor() {
+    console.log(&quot;constructor&quot;);
+  }
+  study() {
+    console.log('study');
+  }
+}
+
+console.log(typeof Me); //function
+let me = new Me(); //constructor
+me.study(); //study
+</code></pre></div><h2 id="promise-对象"><a href="#promise-对象" class="header-anchor">#</a> Promise 对象</h2> <p><code>Promise</code>是异步编程的一种解决方案。</p> <p>从语法上说，<code>Promise</code> 是一个对象，从它可以获取异步操作的消息。
+Promise异步操作有三种状态：<code>pending</code>、<code>fulfilled</code>和<code>rejected</code>。除了异步操作的结果，任何其他操作都无法改变这个状态。
+<code>then</code>方法接收两个函数作为参数，第一个参数是<code>Promise</code>执行成功时的回调，第二个参数是 <code>Promise</code>执行失败时的回调，两个函数只会有一个被调用。</p> <div class="language- extra-class"><pre class="language-text"><code>const p1 = new Promise(function(resolve,reject){
+    resolve('resolve');
+}); 
+const p2 = new Promise(function(resolve,reject){
+    reject('reject');
+});
+p1.then(function(v){  
+    console.log(v); //resolve
+});
+p2.then(function(v){ 
+    console.log(v);
+},
+function(v){
+    console.log(v); //reject
+});
+
+</code></pre></div></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><!----> <span class="next"><a href="/Javascript/原型与原型链.html">
+        原型与原型链
+      </a>
+      →
+    </span></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.a307ad3f.js" defer></script><script src="/assets/js/2.733019b2.js" defer></script><script src="/assets/js/7.c3c1caa3.js" defer></script>
+  </body>
+</html>
