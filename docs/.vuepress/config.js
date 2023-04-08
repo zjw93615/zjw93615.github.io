@@ -9,7 +9,8 @@ module.exports = {
             {
                 text: '前端',
                 items: [
-                    {text: 'Javascript', link: '/Javascript/es6'}
+                    {text: 'Javascript', link: '/Javascript/es6'},
+                    {text: '杂谈', link: '/杂谈/CSS%20overflow-anchor属性的一些坑'}
                 ]
             },
             { text: 'External', link: 'http://jiawei.space' },
