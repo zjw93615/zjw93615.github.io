@@ -1,0 +1,676 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="前菜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="使用patch-package修改第三方模块在我们日常开发中，经常会遇到一些情况就是引用的npm包并不能完全满足我们的需求，或者在某些情况下触发了bug使得组建的展示和行为不正常。这个时候，我们就需要去修改npm包的代码了。 但是，我们知道，我们不能直接进入node_modules中去修改包的代码。因为如果我们在本地的node_modules中修改了代码，可能在我们本地可以正常运行，但是如果团队的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用patch-package修改第三方模块">
+<meta property="og:url" content="http://example.com/2023/04/14/npm/%E4%BD%BF%E7%94%A8patch-package%E4%BF%AE%E6%94%B9%E7%AC%AC%E4%B8%89%E6%96%B9%E6%A8%A1%E5%9D%97/index.html">
+<meta property="og:site_name" content="前菜的空间">
+<meta property="og:description" content="使用patch-package修改第三方模块在我们日常开发中，经常会遇到一些情况就是引用的npm包并不能完全满足我们的需求，或者在某些情况下触发了bug使得组建的展示和行为不正常。这个时候，我们就需要去修改npm包的代码了。 但是，我们知道，我们不能直接进入node_modules中去修改包的代码。因为如果我们在本地的node_modules中修改了代码，可能在我们本地可以正常运行，但是如果团队的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-14T14:57:26.000Z">
+<meta property="article:modified_time" content="2023-04-14T07:47:58.525Z">
+<meta property="article:author" content="前菜">
+<meta property="article:tag" content="npm">
+<meta property="article:tag" content="patch-package">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>使用patch-package修改第三方模块 - 前菜的空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>前菜的空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="使用patch-package修改第三方模块"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-04-14 14:57" pubdate>
+          2023年4月14日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">使用patch-package修改第三方模块</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="使用patch-package修改第三方模块"><a href="#使用patch-package修改第三方模块" class="headerlink" title="使用patch-package修改第三方模块"></a>使用patch-package修改第三方模块</h1><p>在我们日常开发中，经常会遇到一些情况就是引用的npm包并不能完全满足我们的需求，或者在某些情况下触发了bug使得组建的展示和行为不正常。这个时候，我们就需要去修改npm包的代码了。</p>
+<p>但是，我们知道，我们不能直接进入<code>node_modules</code>中去修改包的代码。因为如果我们在本地的<code>node_modules</code>中修改了代码，可能在我们本地可以正常运行，但是如果团队的其他人员进行开发，甚至于使用<code>ci/cd</code>去部署项目时，由于它会重新下载新的包，这样你的改动就不能在其他机器上生效。</p>
+<p>那么我们就来看看如何正确地修改npm包里面的内容，同时能够同步给其他开发人员，使得大家的npm包都是统一修改过的版本。</p>
+<h2 id="安装-patch-package"><a href="#安装-patch-package" class="headerlink" title="安装 patch-package"></a>安装 patch-package</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">npm</span><br>npm install patch-package --save-dev<br></code></pre></td></tr></table></figure>
+
+<h2 id="修改并调试"><a href="#修改并调试" class="headerlink" title="修改并调试"></a>修改并调试</h2><p>一般我们可以直接在npm的官网找到对于的github地址，从而下载到源码。<strong>需要注意的是，我们下载的源码必须要与我们项目中引用的版本相同</strong>。我们就以<code>easy-log-report</code>这个包为例子，我们可以找到它的对应仓库在 <a target="_blank" rel="noopener" href="https://github.com/zjw93615/EasyLog">https://github.com/zjw93615/EasyLog</a> 。我们就把项目的文件下载到本地并且打开。 之后在根目录上按照依赖。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">npm install<br></code></pre></td></tr></table></figure>
+
+<p>接着当我们修改完文件之后，我们怎么知道我们的修改是否生效呢？是否符合我们原来的预期呢？首先我们把修改好的项目<code>build</code>一下，不同的项目可能有不同的<code>build</code>方式，详细的可以看看项目的<code>package.json</code>或者<code>README.md</code>看是否有相关的说明。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">npm run build<br></code></pre></td></tr></table></figure>
+
+<p>编译完成之后，我们可以通过<code>link</code>命令，把我们修改好的包本地链接到引入了这个包的项目中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">cd ~/projects/easy-log-report     # 需要修改的包的根目录<br>npm link                          # 创建全局的npm link<br><br>cd ~/projects/foo                 # 假设这个foo项目引用了easy-log-report这个包，去到foo的根目录<br>npm link easy-log-report          # 把easy-log-report这个包本地链接到foo这个项目<br></code></pre></td></tr></table></figure>
+
+<p>这样我们启动foo这个项目，我们就可以看到我们对于<code>easy-log-report</code>这个包的修改已经生效了。</p>
+<h2 id="创建补丁"><a href="#创建补丁" class="headerlink" title="创建补丁"></a>创建补丁</h2><p>在上面一步，我们已经把包修改完成并且完成调试了，这时候我们就可以把build好的文件拷贝到<code>node_modules</code>中对于的文件夹中。在这个例子中我们需要把<del>&#x2F;projects&#x2F;easy-log-report&#x2F;build文件夹中的文件拷贝到</del>&#x2F;projects&#x2F;foo&#x2F;node_modules&#x2F;easy-log-report&#x2F;build这个文件夹中。然后回到根目录执行patch-package。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">npm &gt; 5.2</span><br>npx patch-package easy-log-report<br></code></pre></td></tr></table></figure>
+<p>执行完成后，会在项目根目录的 <code>patches</code>目录中创建补丁文件 <strong>easy-log-report+1.0.3.patch（1.0.3 是依赖包版本）</strong>，<code>这个补丁需要提交到代码仓库中</code>。</p>
+<p>如果我们打开<code>.patch</code>文件，我们可以发现其实就是一些<code>git diff</code>记录描述，那么<code>patch-package</code>补丁原理呼之欲出——<code>patch-package</code>会将当前<code>node_modules</code>下的源码与原始源码进行<code>git diff</code>，并在项目根目录下生成一个<code>patch</code>补丁文件。</p>
+<h3 id="options"><a href="#options" class="headerlink" title="options"></a>options</h3><p>–use-yarn<br>patch-package 默认是根据项目中的 lockfile 来决定使用 npm 还是 yarn，如果两种都有，则使用 npm，可以通过这个参数启用 yarn</p>
+<p>–exclude <regexp><br>创建补丁文件时，忽略与正则表达式匹配的路径，路径相对于要修改的依赖包的根目录，默认: package\.json$</p>
+<p>–include <regexp><br>与 –exclude <regexp> 相反，创建补丁文件时仅考虑与正则表达式匹配的路径，默认: .*</p>
+<p>–case-sensitive-path-filtering<br>使 –include 或 –exclude 中使用的正则表达式区分大小写</p>
+<p>–patch-dir<br>指定放置补丁文件的目录</p>
+<h2 id="打补丁"><a href="#打补丁" class="headerlink" title="打补丁"></a>打补丁</h2><p>当其他同事拉到代码如何应用补丁呢？基于上述操作我们在<code>npm install</code>后执行<code>patch-package</code>命令即可。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">npx patch-package<br></code></pre></td></tr></table></figure>
+
+<h3 id="options-1"><a href="#options-1" class="headerlink" title="options"></a>options</h3><p>–reverse<br>撤回所有补丁<br>Note: 如果打补丁后，补丁文件被修改过，此操作将失败，此时可以重新安装 node_modules</p>
+<p>–patch-dir<br>指定补丁文件所在目录</p>
+<h2 id="完善npm脚本"><a href="#完善npm脚本" class="headerlink" title="完善npm脚本"></a>完善npm脚本</h2><p>这个流程可借助<code>npm script</code>实现，在<code>package.json</code>的<code>script</code>中添加如下字段及内容：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs js">&#123;<br>    <span class="hljs-string">&quot;postinstall&quot;</span>: <span class="hljs-string">&quot;patch-package&quot;</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这样我们后续执行 npm install 或 yarn install 命令时，会自动为依赖包打补丁了</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/npm/" class="category-chain-item">npm</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/npm/">#npm</a>
+      
+        <a href="/tags/patch-package/">#patch-package</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>使用patch-package修改第三方模块</div>
+      <div>http://example.com/2023/04/14/npm/使用patch-package修改第三方模块/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>前菜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年4月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/04/13/%E6%9D%82%E8%B0%88/%E5%89%8D%E7%AB%AF%E6%97%A5%E5%BF%97%E4%B8%8A%E6%8A%A5%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="前端日志上报的实现">
+                        <span class="hidden-mobile">前端日志上报的实现</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
