@@ -27,7 +27,7 @@ npm install patch-package --save-dev
 一般我们可以直接在npm的官网找到对于的github地址，从而下载到源码。**需要注意的是，我们下载的源码必须要与我们项目中引用的版本相同**。我们就以`easy-log-report`这个包为例子，我们可以找到它的对应仓库在 [https://github.com/zjw93615/EasyLog](https://github.com/zjw93615/EasyLog) 。我们就把项目的文件下载到本地并且打开。 之后在根目录上按照依赖。
 
 ```shell
-npm install
+npm install easy-log-report
 ```
 
 接着当我们修改完文件之后，我们怎么知道我们的修改是否生效呢？是否符合我们原来的预期呢？首先我们把修改好的项目`build`一下，不同的项目可能有不同的`build`方式，详细的可以看看项目的`package.json`或者`README.md`看是否有相关的说明。
@@ -93,7 +93,7 @@ Note: 如果打补丁后，补丁文件被修改过，此操作将失败，此�
 
 ## 完善npm脚本
 这个流程可借助`npm script`实现，在`package.json`的`script`中添加如下字段及内容：
-```js
+```json
 {
     "postinstall": "patch-package"
 }

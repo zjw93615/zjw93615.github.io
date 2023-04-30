@@ -110,3 +110,8 @@ deploy:
 auto_category:
   enable: true
   depth:
+
+sitemap:
+  path: sitemap.xml
+baidusitemap:
+  path: baidusitemap.xml
