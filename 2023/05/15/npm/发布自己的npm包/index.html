@@ -1,0 +1,696 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="前菜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发布自己的npm包我之前就已经做了一个前端日志上报的库，于是在五一期间就想着把这个库打包并放到npm上面以熟悉一下npm包的打包以及发布流程。 首先我们看看antd的包都包含些什么内容。从下图可以看出antd中主要包含了lib &#x2F; es &#x2F; dist三个文件夹，分别是通过三个不同的模块系统打包生成的。  es：es module模块系统 lib: CommonJS模块系统 di">
+<meta property="og:type" content="article">
+<meta property="og:title" content="发布自己的npm包">
+<meta property="og:url" content="https://zjw93615.github.io/2023/05/15/npm/%E5%8F%91%E5%B8%83%E8%87%AA%E5%B7%B1%E7%9A%84npm%E5%8C%85/index.html">
+<meta property="og:site_name" content="前菜的空间">
+<meta property="og:description" content="发布自己的npm包我之前就已经做了一个前端日志上报的库，于是在五一期间就想着把这个库打包并放到npm上面以熟悉一下npm包的打包以及发布流程。 首先我们看看antd的包都包含些什么内容。从下图可以看出antd中主要包含了lib &#x2F; es &#x2F; dist三个文件夹，分别是通过三个不同的模块系统打包生成的。  es：es module模块系统 lib: CommonJS模块系统 di">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zjw93615.github.io/2023/05/15/npm/%E5%8F%91%E5%B8%83%E8%87%AA%E5%B7%B1%E7%9A%84npm%E5%8C%85/img.png">
+<meta property="article:published_time" content="2023-05-15T07:42:10.000Z">
+<meta property="article:modified_time" content="2023-05-15T11:10:02.634Z">
+<meta property="article:author" content="前菜">
+<meta property="article:tag" content="npm">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zjw93615.github.io/2023/05/15/npm/%E5%8F%91%E5%B8%83%E8%87%AA%E5%B7%B1%E7%9A%84npm%E5%8C%85/img.png">
+  
+  
+  
+  <title>发布自己的npm包 - 前菜的空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>前菜的空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="发布自己的npm包"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-15 07:42" pubdate>
+          2023年5月15日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          46 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">发布自己的npm包</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="发布自己的npm包"><a href="#发布自己的npm包" class="headerlink" title="发布自己的npm包"></a>发布自己的npm包</h1><p>我之前就已经做了一个前端日志上报的库，于是在五一期间就想着把这个库打包并放到npm上面以熟悉一下npm包的打包以及发布流程。</p>
+<p>首先我们看看antd的包都包含些什么内容。从下图可以看出antd中主要包含了lib &#x2F; es &#x2F; dist三个文件夹，分别是通过三个不同的模块系统打包生成的。</p>
+<ul>
+<li>es：es module模块系统</li>
+<li>lib: CommonJS模块系统</li>
+<li>dist：UMD模块系统</li>
+</ul>
+<p>下面我们来简单说说这三种打包方式以及为什么要这么打包。</p>
+<img src="/2023/05/15/npm/%E5%8F%91%E5%B8%83%E8%87%AA%E5%B7%B1%E7%9A%84npm%E5%8C%85/img.png" srcset="/img/loading.gif" lazyload class="" title="antd包">
+
+<h2 id="CommonJS"><a href="#CommonJS" class="headerlink" title="CommonJS"></a>CommonJS</h2><p>CommonJS规范是一种同步加载模块的方式，也就是说，只有当模块加载完成后，才能执行后面的操作。由于Nodejs主要用于服务器端编程，而模块文件一般都已经存在于本地硬盘，加载起来比较快，因此同步加载模块的CommonJS规范就比较适用。</p>
+<ul>
+<li>CommonJS模块是同步导入的，这就意味着它更适合用在服务器端，因为所有文件都在本地，即使同步加载速度也是非常快的。如果用在浏览器端，就会有问题了，部分js模块可能达到几M甚至十几M的大小。如果在前端采用CommonJS可能会导致浏览器阻塞，白屏无响应等情况。</li>
+<li>你需要通过<code>require</code>来引用<code>node_modules</code>中的模块或者本地文件中的模块。</li>
+<li>当你通过<code>require</code>引用CommonJS模块时，你得到的时一个浅拷贝的值</li>
+</ul>
+<h2 id="UMD"><a href="#UMD" class="headerlink" title="UMD"></a>UMD</h2><p>UMD 既可以在前端也可以在后端使用，UMD 同时支持 CommonJS 和 AMD，也支持老式的全局变量规范。</p>
+<ul>
+<li>可以在前端和后端通用</li>
+<li>UMD通常是其他打包软件，比如Rollup、webpack的候补选择。当CommonJS或者es module都不可用时将使用UMD进行导入。</li>
+<li>支持直接在前端用 <code>&lt;script src=&quot;lib.umd.js&quot;&gt;&lt;/script&gt;</code> 的方式加载</li>
+</ul>
+<h2 id="es-module-ESM"><a href="#es-module-ESM" class="headerlink" title="es module(ESM)"></a>es module(ESM)</h2><p>与CommonJS规范动态加载不同，ESM模块化的设计思想是尽量的静态化，使得在编译时就能够确定模块之间的依赖关系。由于ESM尽可能地使用了静态化的方式进行引用，这使得它可以实现Tree Shaking来优化代码。<br>和CommonJS相同，ES6规范也定义了一个JS文件就是一个独立模块，模块内部的变量都是私有化的，其他模块无法访问。</p>
+<ul>
+<li>通过 <code>import</code> 和 <code>export</code> 进行模块的引用和导出</li>
+<li>ESM的的引用是值的引用，因此如果你调用方法来修改模块内的值的时候，引用的值也会被修改</li>
+<li>ESM使用了静态化的方式进行引用，这使得它可以实现Tree Shaking来优化代码</li>
+<li>现在已经逐渐被多种浏览器所支持，你可以如下面一样在html中引用ESM模块</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs js">&lt;script type=<span class="hljs-string">&quot;module&quot;</span>&gt;<br>  <span class="hljs-keyword">import</span> &#123;func1&#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;my-lib&#x27;</span>;<br>  <span class="hljs-title function_">func1</span>();<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure>
+
+<p>到此为止，我弄明白了为什么需要这些文件以及这些文件分别有什么作用。接下来我们就可以开始使用打包工具进行打包了。</p>
+<h2 id="UMD-打包"><a href="#UMD-打包" class="headerlink" title="UMD 打包"></a>UMD 打包</h2><p>我们直接使用webpack进行打包，把 <code>libraryTarget: &quot;umd&quot;</code> 输出的目标文件设置为umd模块。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = &#123;<br>    <span class="hljs-attr">entry</span>: <span class="hljs-string">&#x27;./src/index.ts&#x27;</span>,<br>    <span class="hljs-attr">module</span>: &#123;<br>        <span class="hljs-attr">rules</span>: [<br>            &#123;<br>                <span class="hljs-attr">test</span>: <span class="hljs-regexp">/\.tsx?$/</span>,<br>                <span class="hljs-attr">use</span>: <span class="hljs-string">&#x27;ts-loader&#x27;</span>,<br>                <span class="hljs-attr">exclude</span>: <span class="hljs-regexp">/node_modules/</span>,<br>            &#125;,<br>        ],<br>    &#125;,<br>    <span class="hljs-attr">resolve</span>: &#123;<br>        <span class="hljs-attr">extensions</span>: [<span class="hljs-string">&#x27;.tsx&#x27;</span>, <span class="hljs-string">&#x27;.ts&#x27;</span>, <span class="hljs-string">&#x27;.js&#x27;</span>],<br>    &#125;,<br>    <span class="hljs-attr">output</span>: &#123;<br>        <span class="hljs-attr">path</span>: distDir,<br>        <span class="hljs-attr">filename</span>: <span class="hljs-string">&quot;[name].min.js&quot;</span>,<br>        <span class="hljs-comment">// 采用通用模块定义</span><br>        <span class="hljs-attr">libraryTarget</span>: <span class="hljs-string">&quot;umd&quot;</span>,<br>        <span class="hljs-attr">library</span>: <span class="hljs-string">&#x27;easy-log-report&#x27;</span><br>    &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们可以通过以下命令进行打包，或者 <code>&quot;build&quot;: &quot;webpack --config webpack.config.js&quot;</code> 放在 <code>scripts</code> 中</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">npx webpack --config webpack.config.js<br></code></pre></td></tr></table></figure>
+
+<p>这个时候我们就可以看到dist文件夹中生成了一个main.min.js的文件，这个就是我们打包出来的UMD模块的文件了。</p>
+<h2 id="CommonJS-打包"><a href="#CommonJS-打包" class="headerlink" title="CommonJS 打包"></a>CommonJS 打包</h2><p>上面讲了如何使用 <code>webpack.config.umd.js</code> 的 <code>umd</code> 模式打包 <code>react</code> 组件，接下来我们讲如何使用 <code>commonjs</code> 模式打包 <code>react</code> 组件，<code>commonjs</code> 模式打包我们使用的是 <code>babel</code> 直接打包，并且要修改 <code>.babelrc</code>，如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;presets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;@babel/preset-env&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;modules&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;commonjs&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;@babel/plugin-proposal-object-rest-spread&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;@babel/plugin-proposal-decorators&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;legacy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;@babel/plugin-proposal-class-properties&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;@babel/plugin-transform-classes&quot;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="es-module-打包"><a href="#es-module-打包" class="headerlink" title="es module 打包"></a>es module 打包</h2><p><code>es modules</code> 打包和 <code>babel</code> 打包很类似也是通过 <code>babel</code> 打包，不同的是 <code>.babelrc</code> 文件有所修改，代码如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;presets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;@babel/preset-env&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;modules&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;@babel/plugin-proposal-object-rest-spread&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;@babel/plugin-proposal-decorators&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;legacy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;@babel/plugin-proposal-class-properties&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;@babel/plugin-transform-classes&quot;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>这样就完成了 UMD、CommonJS 和 es 的三种打包方式，但是这样有个问题：每次打包都要修改.babelrc 文件，能不能直接通过一条命令打包三种模式的方法呢？下面我们就来讲讲。</p>
+<h2 id="流程化打包"><a href="#流程化打包" class="headerlink" title="流程化打包"></a>流程化打包</h2><p>通过三种打包模式我们发现，.babelrc 文件跟三种模式打包有关，尤其是其中几个对象的设置，其它的设置都一样。我们可以通过修改 <code>.babelrc.js</code> 文件进行代码控制，同时我们也可以通过 <code>gulp</code> 来实现流程化打包。</p>
+<p>gulp是基于node平台开发的前端构建工具，通过任务的方式执行机械化操作，提高开发效率。gulp能够帮我们完成几乎打包时候遇到的所有情况，html、css、js文件压缩合并，语法转换（es6、less…)，公共文件抽离，清理临时文件等。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-keyword">const</span> gulp = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp&#x27;</span>);<br><span class="hljs-keyword">const</span> babel = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-babel&#x27;</span>);<br><span class="hljs-keyword">const</span> clean = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;del&#x27;</span>);<br><span class="hljs-keyword">const</span> ts = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-typescript&#x27;</span>);<br><span class="hljs-keyword">const</span> merge = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;merge2&#x27;</span>);<br><br><span class="hljs-keyword">const</span> tsProject = ts.<span class="hljs-title function_">createProject</span>(<span class="hljs-string">&#x27;./tsconfig.json&#x27;</span>);<br><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">ESDIR</span> = <span class="hljs-string">&#x27;./es&#x27;</span>;<br><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">LIBDIR</span> = <span class="hljs-string">&#x27;./lib&#x27;</span>;<br><br><span class="hljs-comment">/* eslint-disable */</span><br>gulp.<span class="hljs-title function_">task</span>(<span class="hljs-string">&#x27;clean&#x27;</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-title function_">clean</span>([<span class="hljs-string">&#x27;lib&#x27;</span>]);<br>&#125;);<br><br><span class="hljs-comment">/* eslint-disable */</span><br>gulp.<span class="hljs-title function_">task</span>(<span class="hljs-string">&#x27;cleanEs&#x27;</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-title function_">clean</span>([<span class="hljs-string">&#x27;es&#x27;</span>]);<br>&#125;);<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">moveLess</span>(<span class="hljs-params">dir</span>) &#123;<br>  <span class="hljs-keyword">return</span> gulp.<span class="hljs-title function_">src</span>(<span class="hljs-string">&#x27;./packages/**/*.less&#x27;</span>).<span class="hljs-title function_">pipe</span>(gulp.<span class="hljs-title function_">dest</span>(dir));<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">compileTs</span>(<span class="hljs-params"></span>) &#123;<br>  <span class="hljs-keyword">return</span> tsProject.<span class="hljs-title function_">src</span>()<br>    .<span class="hljs-title function_">pipe</span>(<span class="hljs-title function_">tsProject</span>());<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">babelConfig</span>(<span class="hljs-params">moduleType</span>) &#123;<br>  <span class="hljs-keyword">return</span> &#123;<br>    <span class="hljs-attr">babelrc</span>: <span class="hljs-literal">false</span>,<br>    <span class="hljs-attr">presets</span>: [<br>      [<span class="hljs-string">&quot;@babel/preset-env&quot;</span>, &#123; <span class="hljs-string">&quot;modules&quot;</span>: moduleType &#125;]<br>    ],<br>    <span class="hljs-attr">plugins</span>: [<br>      <span class="hljs-string">&quot;@babel/plugin-proposal-object-rest-spread&quot;</span>,<br>      [<span class="hljs-string">&quot;@babel/plugin-proposal-decorators&quot;</span>, &#123; <span class="hljs-string">&quot;legacy&quot;</span>: <span class="hljs-literal">true</span> &#125;],<br>      <span class="hljs-string">&quot;@babel/plugin-proposal-class-properties&quot;</span>,<br>      <span class="hljs-string">&quot;@babel/plugin-transform-classes&quot;</span><br>    ]<br>  &#125;;<br>&#125;<br><br>gulp.<span class="hljs-title function_">task</span>(<span class="hljs-string">&#x27;es&#x27;</span>, gulp.<span class="hljs-title function_">series</span>(<span class="hljs-string">&#x27;cleanEs&#x27;</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>  <span class="hljs-keyword">const</span> tsSream =  <span class="hljs-title function_">compileTs</span>();<br>  <span class="hljs-keyword">const</span> jsStream = tsSream.<span class="hljs-property">js</span>.<span class="hljs-title function_">pipe</span>(<span class="hljs-title function_">babel</span>(<span class="hljs-title function_">babelConfig</span>(<span class="hljs-literal">false</span>))).<span class="hljs-title function_">pipe</span>(gulp.<span class="hljs-title function_">dest</span>(<span class="hljs-variable constant_">ESDIR</span>));<br>  <span class="hljs-keyword">const</span> tsdStream = tsSream.<span class="hljs-property">dts</span><br>    .<span class="hljs-title function_">pipe</span>(gulp.<span class="hljs-title function_">dest</span>(<span class="hljs-variable constant_">ESDIR</span>));<br>  <span class="hljs-keyword">return</span> <span class="hljs-title function_">merge</span>(jsStream, tsdStream);<br>&#125;));<br><br><span class="hljs-comment">// 发布打包</span><br>gulp.<span class="hljs-title function_">task</span>(<span class="hljs-string">&#x27;lib&#x27;</span>, gulp.<span class="hljs-title function_">series</span>(<span class="hljs-string">&#x27;clean&#x27;</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>  <span class="hljs-keyword">const</span> tsSream =  <span class="hljs-title function_">compileTs</span>();<br>  <span class="hljs-keyword">const</span> jsStream = tsSream.<span class="hljs-property">js</span>.<span class="hljs-title function_">pipe</span>(<span class="hljs-title function_">babel</span>(<span class="hljs-title function_">babelConfig</span>(<span class="hljs-string">&#x27;commonjs&#x27;</span>))).<span class="hljs-title function_">pipe</span>(gulp.<span class="hljs-title function_">dest</span>(<span class="hljs-variable constant_">LIBDIR</span>));<br>  <span class="hljs-keyword">const</span> tsdStream = tsSream.<span class="hljs-property">dts</span><br>    .<span class="hljs-title function_">pipe</span>(gulp.<span class="hljs-title function_">dest</span>(<span class="hljs-variable constant_">LIBDIR</span>));<br>  <span class="hljs-keyword">return</span> <span class="hljs-title function_">merge</span>(jsStream, tsdStream);<br>&#125;));<br><br>gulp.<span class="hljs-title function_">task</span>(<span class="hljs-string">&#x27;default&#x27;</span>, gulp.<span class="hljs-title function_">series</span>(<span class="hljs-string">&#x27;lib&#x27;</span>, <span class="hljs-string">&#x27;es&#x27;</span>));<br></code></pre></td></tr></table></figure>
+
+<p>通过代码，我们可以看到，我们在这里新建了两个任务，分别对 <code>es</code> 和 <code>CommonJs</code> 进行打包，最后再把这两个task合并成为一个打包的 <code>series</code> 流程。至此我们就完成了同时打包三种模块的工作，再在 <code>package.json</code> 中进行一下 <code>scripts</code> 的整理。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;build&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;webpack --config webpack.config.js&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;lib&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;gulp lib&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;es&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;gulp es&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;pub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;gulp&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;propub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;gulp &amp;&amp; webpack --config webpack.config.js&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>我们在需要打包的时候，直接运行脚本 <code>propub</code> 即可完成打包。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">npm run propub<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/npm/" class="category-chain-item">npm</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/npm/">#npm</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>发布自己的npm包</div>
+      <div>https://zjw93615.github.io/2023/05/15/npm/发布自己的npm包/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>前菜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年5月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/04/14/npm/%E4%BD%BF%E7%94%A8patch-package%E4%BF%AE%E6%94%B9%E7%AC%AC%E4%B8%89%E6%96%B9%E6%A8%A1%E5%9D%97/" title="使用patch-package修改第三方模块">
+                        <span class="hidden-mobile">使用patch-package修改第三方模块</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
