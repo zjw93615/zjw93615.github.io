@@ -1,10 +1,10 @@
 ---
 title: 发布自己的npm包
 tags:
-- npm
-  categories:
-- npm
-  date: 2023-05-15 15:42:10
+  - npm
+categories:
+  - npm 
+date: 2023-05-15 15:42:10
 ---
 
 # 发布自己的npm包
