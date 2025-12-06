@@ -1,5 +1,5 @@
 ---
-title: 基于 Koa构建 7000+ QPS 游戏活动后端
+title: 基于 Koa 构建 7000+ QPS 游戏活动后端
 tags:
   - Koa
   - Redis

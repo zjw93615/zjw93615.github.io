@@ -1,6 +1,10 @@
 ---
 title: Sequelize 核心 + TiDB/MySQL 驱动（TiDB 兼容 mysql2 驱动）
 tags:
+  - TypeScript
+  - Sequelize
+  - TiDB
+  - Koa
 categories:
   - TypeScript
 date: 2025-12-06 21:18:21

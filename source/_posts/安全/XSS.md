@@ -1,6 +1,8 @@
 ---
 title: XSS攻击
 tags:
+  - 安全
+  - XSS
 categories:
   - 安全
 date: 2025-12-06 21:18:21

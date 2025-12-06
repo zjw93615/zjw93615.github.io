@@ -1,6 +1,7 @@
 ---
 title: 初始化npm项目
 tags:
+  - Redis
 categories:
   - Redis
 date: 2025-12-06 21:18:21

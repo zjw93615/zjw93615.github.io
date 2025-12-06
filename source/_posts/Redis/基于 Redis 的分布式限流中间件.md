@@ -1,6 +1,8 @@
 ---
 title: 基于 Redis 的分布式限流中间件
 tags:
+  - Redis
+  - Koa
 categories:
   - Redis
 date: 2025-12-06 21:18:21
