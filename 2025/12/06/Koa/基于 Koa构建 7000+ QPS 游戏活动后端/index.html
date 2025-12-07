@@ -1,0 +1,810 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="基于 Koa + TiDB 构建 7000+ QPS 游戏活动后端：全维度设计方案游戏活动后端的核心痛点是高并发（7000+ QPS 且可能有突发峰值）、数据一致性（用户参与&#x2F;领奖幂等）、规则灵活（活动配置化）、容灾可靠，而 TiDB 作为分布式 NewSQL 数据库，天然适配高并发读写和水平扩展，Koa 需结合高并发优化手段适配场景。以下从「整体架构→应用层→数据层→缓存层→限流熔断→">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于 Koa 构建 7000+ QPS 游戏活动后端">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/Koa/%E5%9F%BA%E4%BA%8E%20Koa%E6%9E%84%E5%BB%BA%207000+%20QPS%20%E6%B8%B8%E6%88%8F%E6%B4%BB%E5%8A%A8%E5%90%8E%E7%AB%AF/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="基于 Koa + TiDB 构建 7000+ QPS 游戏活动后端：全维度设计方案游戏活动后端的核心痛点是高并发（7000+ QPS 且可能有突发峰值）、数据一致性（用户参与&#x2F;领奖幂等）、规则灵活（活动配置化）、容灾可靠，而 TiDB 作为分布式 NewSQL 数据库，天然适配高并发读写和水平扩展，Koa 需结合高并发优化手段适配场景。以下从「整体架构→应用层→数据层→缓存层→限流熔断→">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:53:59.281Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="缓存">
+<meta property="article:tag" content="Koa">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>基于 Koa 构建 7000+ QPS 游戏活动后端 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="基于 Koa 构建 7000+ QPS 游戏活动后端"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          13k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          106 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">基于 Koa 构建 7000+ QPS 游戏活动后端</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="基于-Koa-TiDB-构建-7000-QPS-游戏活动后端：全维度设计方案"><a href="#基于-Koa-TiDB-构建-7000-QPS-游戏活动后端：全维度设计方案" class="headerlink" title="基于 Koa + TiDB 构建 7000+ QPS 游戏活动后端：全维度设计方案"></a>基于 Koa + TiDB 构建 7000+ QPS 游戏活动后端：全维度设计方案</h3><p>游戏活动后端的核心痛点是<strong>高并发（7000+ QPS 且可能有突发峰值）、数据一致性（用户参与&#x2F;领奖幂等）、规则灵活（活动配置化）、容灾可靠</strong>，而 TiDB 作为分布式 NewSQL 数据库，天然适配高并发读写和水平扩展，Koa 需结合高并发优化手段适配场景。以下从「整体架构→应用层→数据层→缓存层→限流熔断→监控容灾」全链路拆解设计，所有方案均落地到代码&#x2F;配置层面。</p>
+<h2 id="一、整体架构设计（适配-7000-QPS-核心）"><a href="#一、整体架构设计（适配-7000-QPS-核心）" class="headerlink" title="一、整体架构设计（适配 7000+ QPS 核心）"></a>一、整体架构设计（适配 7000+ QPS 核心）</h2><p>核心思路：<strong>接入层分流 + 应用层无状态集群 + 缓存层扛读 + TiDB 扛写 + 异步层解耦</strong>，架构图如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs">客户端 → CDN（静态资源）→ Nginx（负载均衡/限流）→ Koa 集群（多实例）→ Redis 集群（热点缓存）<br>                                                          ↓<br>                                                TiDB 集群（分布式存储）← 消息队列（异步任务）<br>                                                          ↓<br>                                                TiFlash（读写分离/分析）<br></code></pre></td></tr></table></figure>
+<h3 id="各层核心职责："><a href="#各层核心职责：" class="headerlink" title="各层核心职责："></a>各层核心职责：</h3><table>
+<thead>
+<tr>
+<th>层级</th>
+<th>组件&#x2F;技术</th>
+<th>核心作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>接入层</td>
+<td>Nginx</td>
+<td>反向代理、负载均衡（轮询&#x2F;IP哈希）、接口限流、静态资源缓存、SSL 卸载</td>
+</tr>
+<tr>
+<td>应用层</td>
+<td>Koa（多进程&#x2F;多实例）</td>
+<td>无状态业务逻辑处理、参数校验、权限控制、缓存读写、TiDB 连接池操作</td>
+</tr>
+<tr>
+<td>缓存层</td>
+<td>Redis 集群（主从+哨兵）</td>
+<td>缓存活动配置、用户参与状态、奖励发放记录，扛 90%+ 读请求</td>
+</tr>
+<tr>
+<td>数据层</td>
+<td>TiDB 集群</td>
+<td>存储活动核心数据（用户参与、奖励记录），分布式事务保证数据一致性</td>
+</tr>
+<tr>
+<td>异步层</td>
+<td>RocketMQ&#x2F;RabbitMQ</td>
+<td>处理非实时任务（奖励发放、日志上报、数据统计），减少同步请求耗时</td>
+</tr>
+<tr>
+<td>监控层</td>
+<td>Prometheus+Grafana&#x2F;ELK</td>
+<td>监控 QPS、响应耗时、TiDB 性能、Redis 命中率，日志收集与问题溯源</td>
+</tr>
+</tbody></table>
+<h2 id="二、Koa-应用层高并发设计（核心落地）"><a href="#二、Koa-应用层高并发设计（核心落地）" class="headerlink" title="二、Koa 应用层高并发设计（核心落地）"></a>二、Koa 应用层高并发设计（核心落地）</h2><h3 id="1-集群部署：无状态化-多进程-x2F-多实例"><a href="#1-集群部署：无状态化-多进程-x2F-多实例" class="headerlink" title="1. 集群部署：无状态化 + 多进程&#x2F;多实例"></a>1. 集群部署：无状态化 + 多进程&#x2F;多实例</h3><p>7000+ QPS 单进程 Koa 无法承载，需做<strong>多进程+多实例部署</strong>，且应用必须无状态（不存储会话&#x2F;连接等信息）。</p>
+<h4 id="（1）Koa-多进程部署（Node-js-集群）"><a href="#（1）Koa-多进程部署（Node-js-集群）" class="headerlink" title="（1）Koa 多进程部署（Node.js 集群）"></a>（1）Koa 多进程部署（Node.js 集群）</h4><p>利用 Node.js <code>cluster</code> 模块启动多进程，绑定同一个端口（Nginx 反向代理），充分利用多核 CPU：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// src/app.js（Koa 入口）</span><br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> cluster = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;cluster&#x27;</span>);<br><span class="hljs-keyword">const</span> numCPUs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;os&#x27;</span>).<span class="hljs-title function_">cpus</span>().<span class="hljs-property">length</span>;<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br><span class="hljs-comment">// 主进程：启动多工作进程</span><br><span class="hljs-keyword">if</span> (cluster.<span class="hljs-property">isPrimary</span>) &#123;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`主进程 <span class="hljs-subst">$&#123;process.pid&#125;</span> 启动`</span>);<br>  <span class="hljs-comment">// 启动与 CPU 核心数一致的进程（最大化利用多核）</span><br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; numCPUs; i++) &#123;<br>    cluster.<span class="hljs-title function_">fork</span>();<br>  &#125;<br>  <span class="hljs-comment">// 进程崩溃自动重启（容灾）</span><br>  cluster.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;exit&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">worker</span>) =&gt;</span> &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`工作进程 <span class="hljs-subst">$&#123;worker.process.pid&#125;</span> 崩溃，重启中...`</span>);<br>    cluster.<span class="hljs-title function_">fork</span>();<br>  &#125;);<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>  <span class="hljs-comment">// 工作进程：初始化 Koa 应用</span><br>  <span class="hljs-keyword">const</span> koaBody = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-body&#x27;</span>);<br>  <span class="hljs-keyword">const</span> redis = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./utils/redis&#x27;</span>); <span class="hljs-comment">// Redis 连接池</span><br>  <span class="hljs-keyword">const</span> tidb = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./utils/tidb&#x27;</span>); <span class="hljs-comment">// TiDB 连接池</span><br>  <span class="hljs-keyword">const</span> activityRouter = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./routes/activity&#x27;</span>); <span class="hljs-comment">// 活动路由</span><br><br>  <span class="hljs-comment">// 1. 基础中间件（性能优化版）</span><br>  app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">koaBody</span>(&#123; <span class="hljs-attr">jsonLimit</span>: <span class="hljs-string">&#x27;1mb&#x27;</span>, <span class="hljs-attr">formLimit</span>: <span class="hljs-string">&#x27;1mb&#x27;</span> &#125;)); <span class="hljs-comment">// 限制请求体</span><br>  app.<span class="hljs-title function_">use</span>(<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./middleware/rateLimit&#x27;</span>)); <span class="hljs-comment">// 分布式限流</span><br>  app.<span class="hljs-title function_">use</span>(<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./middleware/responseFormat&#x27;</span>)); <span class="hljs-comment">// 统一响应</span><br><br>  <span class="hljs-comment">// 2. 注册业务路由</span><br>  app.<span class="hljs-title function_">use</span>(activityRouter.<span class="hljs-title function_">routes</span>());<br><br>  <span class="hljs-comment">// 3. 启动服务（每个工作进程监听同一端口，由 OS 分发请求）</span><br>  app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`工作进程 <span class="hljs-subst">$&#123;process.pid&#125;</span> 启动，监听 3000 端口`</span>);<br>  &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="（2）无状态设计关键"><a href="#（2）无状态设计关键" class="headerlink" title="（2）无状态设计关键"></a>（2）无状态设计关键</h4><ul>
+<li>会话存储：用户登录态&#x2F;活动会话存入 Redis，而非 Koa 内存；</li>
+<li>连接池复用：TiDB&#x2F;Redis 连接池全局初始化，工作进程复用，不重复创建；</li>
+<li>避免本地缓存：所有缓存走 Redis 集群，保证多实例数据一致。</li>
+</ul>
+<h3 id="2-Koa-中间件极致优化（适配高并发）"><a href="#2-Koa-中间件极致优化（适配高并发）" class="headerlink" title="2. Koa 中间件极致优化（适配高并发）"></a>2. Koa 中间件极致优化（适配高并发）</h3><p>基于前文中间件性能优化思路，结合游戏活动场景定制：</p>
+<h4 id="（1）精准中间件注册（仅活动接口执行核心逻辑）"><a href="#（1）精准中间件注册（仅活动接口执行核心逻辑）" class="headerlink" title="（1）精准中间件注册（仅活动接口执行核心逻辑）"></a>（1）精准中间件注册（仅活动接口执行核心逻辑）</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// routes/activity.js</span><br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Router</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-router&#x27;</span>);<br><span class="hljs-keyword">const</span> router = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Router</span>(&#123; <span class="hljs-attr">prefix</span>: <span class="hljs-string">&#x27;/api/activity&#x27;</span> &#125;);<br><span class="hljs-keyword">const</span> validate = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../middleware/validate&#x27;</span>); <span class="hljs-comment">// 参数校验</span><br><span class="hljs-keyword">const</span> auth = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../middleware/auth&#x27;</span>); <span class="hljs-comment">// 玩家鉴权</span><br><span class="hljs-keyword">const</span> activityService = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../service/activity&#x27;</span>); <span class="hljs-comment">// 业务逻辑</span><br><br><span class="hljs-comment">// 仅活动参与接口执行限流+鉴权+参数校验</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/join&#x27;</span>,<br>  <span class="hljs-title function_">validate</span>(&#123;<br>    <span class="hljs-attr">activityId</span>: &#123; <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;integer&#x27;</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span> &#125;,<br>    <span class="hljs-attr">userId</span>: &#123; <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;integer&#x27;</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span> &#125;<br>  &#125;, <span class="hljs-string">&#x27;body&#x27;</span>),<br>  auth, <span class="hljs-comment">// 校验玩家token</span><br>  <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>    <span class="hljs-keyword">const</span> &#123; activityId, userId &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>    <span class="hljs-comment">// 核心逻辑：先查缓存，再查DB，异步发奖</span><br>    <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> activityService.<span class="hljs-title function_">joinActivity</span>(activityId, userId);<br>    ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">data</span>: result &#125;;<br>  &#125;<br>);<br><br><span class="hljs-comment">// 活动配置查询：仅缓存查询，无鉴权（高频读）</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/config/:activityId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; activityId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> config = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">get</span>(<span class="hljs-string">`activity:config:<span class="hljs-subst">$&#123;activityId&#125;</span>`</span>);<br>  <span class="hljs-keyword">if</span> (!config) &#123;<br>    <span class="hljs-comment">// 缓存穿透防护：查DB后写入缓存</span><br>    <span class="hljs-keyword">const</span> dbConfig = <span class="hljs-keyword">await</span> tidb.<span class="hljs-title function_">query</span>(<span class="hljs-string">&#x27;SELECT * FROM activity_config WHERE id = ?&#x27;</span>, [activityId]);<br>    <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">set</span>(<span class="hljs-string">`activity:config:<span class="hljs-subst">$&#123;activityId&#125;</span>`</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(dbConfig), <span class="hljs-string">&#x27;EX&#x27;</span>, <span class="hljs-number">3600</span>);<br>    ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">data</span>: dbConfig &#125;;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">data</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(config) &#125;;<br>&#125;);<br><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = router;<br></code></pre></td></tr></table></figure>
+
+<h4 id="（2）异步操作并行化-连接池复用"><a href="#（2）异步操作并行化-连接池复用" class="headerlink" title="（2）异步操作并行化 + 连接池复用"></a>（2）异步操作并行化 + 连接池复用</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// utils/tidb.js（TiDB 连接池）</span><br><span class="hljs-keyword">const</span> mysql2 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mysql2/promise&#x27;</span>);<br><br><span class="hljs-comment">// 全局连接池（TiDB 兼容MySQL协议，用mysql2即可）</span><br><span class="hljs-keyword">const</span> pool = mysql2.<span class="hljs-title function_">createPool</span>(&#123;<br>  <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;tidb-cluster-host&#x27;</span>,<br>  <span class="hljs-attr">port</span>: <span class="hljs-number">4000</span>,<br>  <span class="hljs-attr">user</span>: <span class="hljs-string">&#x27;root&#x27;</span>,<br>  <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;xxx&#x27;</span>,<br>  <span class="hljs-attr">database</span>: <span class="hljs-string">&#x27;game_activity&#x27;</span>,<br>  <span class="hljs-attr">connectionLimit</span>: <span class="hljs-number">100</span>, <span class="hljs-comment">// 连接池大小（适配7000 QPS，需压测调整）</span><br>  <span class="hljs-attr">waitForConnections</span>: <span class="hljs-literal">true</span>,<br>  <span class="hljs-attr">queueLimit</span>: <span class="hljs-number">0</span>,<br>  <span class="hljs-comment">// TiDB 特有优化：启用批量执行、关闭超时重连</span><br>  <span class="hljs-attr">enableKeepAlive</span>: <span class="hljs-literal">true</span>,<br>  <span class="hljs-attr">keepAliveInitialDelay</span>: <span class="hljs-number">30000</span><br>&#125;);<br><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = pool;<br><br><span class="hljs-comment">// service/activity.js（业务逻辑：并行化异步操作）</span><br><span class="hljs-keyword">const</span> redis = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../utils/redis&#x27;</span>);<br><span class="hljs-keyword">const</span> tidb = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../utils/tidb&#x27;</span>);<br><span class="hljs-keyword">const</span> mq = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../utils/mq&#x27;</span>); <span class="hljs-comment">// 消息队列</span><br><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">joinActivity</span>(<span class="hljs-params">activityId, userId</span>) &#123;<br>  <span class="hljs-comment">// 1. 幂等性校验（先查缓存，避免重复参与）</span><br>  <span class="hljs-keyword">const</span> joined = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">get</span>(<span class="hljs-string">`activity:join:<span class="hljs-subst">$&#123;activityId&#125;</span>:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>);<br>  <span class="hljs-keyword">if</span> (joined) &#123;<br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;已参与该活动&#x27;</span>);<br>  &#125;<br><br>  <span class="hljs-comment">// 2. 并行查询：活动状态 + 用户状态（减少串行耗时）</span><br>  <span class="hljs-keyword">const</span> [activityStatus, userStatus] = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>([<br>    redis.<span class="hljs-title function_">get</span>(<span class="hljs-string">`activity:status:<span class="hljs-subst">$&#123;activityId&#125;</span>`</span>),<br>    tidb.<span class="hljs-title function_">query</span>(<span class="hljs-string">&#x27;SELECT status FROM user WHERE id = ?&#x27;</span>, [userId])<br>  ]);<br><br>  <span class="hljs-keyword">if</span> (activityStatus !== <span class="hljs-string">&#x27;active&#x27;</span> || userStatus[<span class="hljs-number">0</span>].<span class="hljs-property">status</span> !== <span class="hljs-string">&#x27;normal&#x27;</span>) &#123;<br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;无法参与活动&#x27;</span>);<br>  &#125;<br><br>  <span class="hljs-comment">// 3. TiDB 事务：扣减参与次数 + 记录参与（短事务，避免锁等待）</span><br>  <span class="hljs-keyword">const</span> conn = <span class="hljs-keyword">await</span> tidb.<span class="hljs-title function_">getConnection</span>();<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-keyword">await</span> conn.<span class="hljs-title function_">beginTransaction</span>();<br>    <span class="hljs-comment">// 扣减活动剩余参与次数</span><br>    <span class="hljs-keyword">await</span> conn.<span class="hljs-title function_">query</span>(<span class="hljs-string">&#x27;UPDATE activity SET remain_count = remain_count - 1 WHERE id = ? AND remain_count &gt; 0&#x27;</span>, [activityId]);<br>    <span class="hljs-comment">// 记录用户参与</span><br>    <span class="hljs-keyword">await</span> conn.<span class="hljs-title function_">query</span>(<span class="hljs-string">&#x27;INSERT INTO user_activity (user_id, activity_id, join_time) VALUES (?, ?, NOW())&#x27;</span>, [userId, activityId]);<br>    <span class="hljs-keyword">await</span> conn.<span class="hljs-title function_">commit</span>();<br><br>    <span class="hljs-comment">// 4. 缓存更新（延迟双删，防缓存不一致）</span><br>    <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">set</span>(<span class="hljs-string">`activity:join:<span class="hljs-subst">$&#123;activityId&#125;</span>:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>, <span class="hljs-string">&#x27;1&#x27;</span>, <span class="hljs-string">&#x27;EX&#x27;</span>, <span class="hljs-number">86400</span>);<br>    <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>      redis.<span class="hljs-title function_">del</span>(<span class="hljs-string">`activity:remain:<span class="hljs-subst">$&#123;activityId&#125;</span>`</span>); <span class="hljs-comment">// 延迟删缓存，保证DB已更新</span><br>    &#125;, <span class="hljs-number">500</span>);<br><br>    <span class="hljs-comment">// 5. 异步发奖（消息队列，不阻塞同步请求）</span><br>    mq.<span class="hljs-title function_">send</span>(<span class="hljs-string">&#x27;activity_reward&#x27;</span>, &#123; activityId, userId &#125;);<br><br>    <span class="hljs-keyword">return</span> &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;参与成功&#x27;</span> &#125;;<br>  &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>    <span class="hljs-keyword">await</span> conn.<span class="hljs-title function_">rollback</span>();<br>    <span class="hljs-keyword">throw</span> err;<br>  &#125; <span class="hljs-keyword">finally</span> &#123;<br>    conn.<span class="hljs-title function_">release</span>(); <span class="hljs-comment">// 释放连接池连接</span><br>  &#125;<br>&#125;<br><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = &#123; joinActivity &#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="三、TiDB-数据库设计（适配游戏活动-高并发）"><a href="#三、TiDB-数据库设计（适配游戏活动-高并发）" class="headerlink" title="三、TiDB 数据库设计（适配游戏活动 + 高并发）"></a>三、TiDB 数据库设计（适配游戏活动 + 高并发）</h2><p>TiDB 作为分布式数据库，需充分利用其「水平扩展、分区表、读写分离、事务一致性」特性，针对游戏活动场景做以下设计：</p>
+<h3 id="1-核心表结构设计（分表-分区）"><a href="#1-核心表结构设计（分表-分区）" class="headerlink" title="1. 核心表结构设计（分表+分区）"></a>1. 核心表结构设计（分表+分区）</h3><p>游戏活动核心表：<code>activity_config</code>（活动配置）、<code>activity</code>（活动状态）、<code>user_activity</code>（用户参与记录）、<code>user_reward</code>（奖励记录）。</p>
+<h4 id="（1）表结构示例（优化索引-分区）"><a href="#（1）表结构示例（优化索引-分区）" class="headerlink" title="（1）表结构示例（优化索引+分区）"></a>（1）表结构示例（优化索引+分区）</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 1. 活动配置表（读多写少，TiFlash 同步）</span><br><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> `activity_config` (<br>  `id` <span class="hljs-type">bigint</span>(<span class="hljs-number">20</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> AUTO_INCREMENT,<br>  `name` <span class="hljs-type">varchar</span>(<span class="hljs-number">100</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;活动名称&#x27;</span>,<br>  `start_time` datetime <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;开始时间&#x27;</span>,<br>  `end_time` datetime <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;结束时间&#x27;</span>,<br>  `rules` json <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;活动规则（配置化）&#x27;</span>,<br>  `reward_config` json <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;奖励配置&#x27;</span>,<br>  `create_time` datetime <span class="hljs-keyword">DEFAULT</span> <span class="hljs-built_in">CURRENT_TIMESTAMP</span>,<br>  <span class="hljs-keyword">PRIMARY</span> KEY (`id`) <span class="hljs-comment">/*T![clustered_index] CLUSTERED */</span>,<br>  KEY `idx_time` (`start_time`, `end_time`)<br>) ENGINE<span class="hljs-operator">=</span>InnoDB <span class="hljs-keyword">DEFAULT</span> CHARSET<span class="hljs-operator">=</span>utf8mb4 <span class="hljs-keyword">COLLATE</span><span class="hljs-operator">=</span>utf8mb4_bin<br><span class="hljs-comment">-- TiDB 分区：按活动ID范围分区（便于扩容）</span><br><span class="hljs-keyword">PARTITION</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">RANGE</span> (id) (<br>  <span class="hljs-keyword">PARTITION</span> p0 <span class="hljs-keyword">VALUES</span> LESS THAN (<span class="hljs-number">1000</span>),<br>  <span class="hljs-keyword">PARTITION</span> p1 <span class="hljs-keyword">VALUES</span> LESS THAN (<span class="hljs-number">2000</span>),<br>  <span class="hljs-keyword">PARTITION</span> p2 <span class="hljs-keyword">VALUES</span> LESS THAN MAXVALUE<br>);<br><br><span class="hljs-comment">-- 2. 用户参与记录表（高并发写，核心表）</span><br><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> `user_activity` (<br>  `id` <span class="hljs-type">bigint</span>(<span class="hljs-number">20</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> AUTO_INCREMENT,<br>  `user_id` <span class="hljs-type">bigint</span>(<span class="hljs-number">20</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;玩家ID&#x27;</span>,<br>  `activity_id` <span class="hljs-type">bigint</span>(<span class="hljs-number">20</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;活动ID&#x27;</span>,<br>  `join_time` datetime <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-built_in">CURRENT_TIMESTAMP</span> COMMENT <span class="hljs-string">&#x27;参与时间&#x27;</span>,<br>  `status` tinyint(<span class="hljs-number">4</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">1</span> COMMENT <span class="hljs-string">&#x27;1-成功 2-失败&#x27;</span>,<br>  `ext` json <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NULL</span> COMMENT <span class="hljs-string">&#x27;扩展字段&#x27;</span>,<br>  <span class="hljs-keyword">PRIMARY</span> KEY (`id`) <span class="hljs-comment">/*T![clustered_index] CLUSTERED */</span>,<br>  <span class="hljs-comment">-- 联合索引：适配高频查询（按活动ID+用户ID查参与记录）</span><br>  <span class="hljs-keyword">UNIQUE</span> KEY `uk_user_activity` (`user_id`, `activity_id`),<br>  KEY `idx_activity_time` (`activity_id`, `join_time`)<br>) ENGINE<span class="hljs-operator">=</span>InnoDB <span class="hljs-keyword">DEFAULT</span> CHARSET<span class="hljs-operator">=</span>utf8mb4 <span class="hljs-keyword">COLLATE</span><span class="hljs-operator">=</span>utf8mb4_bin<br><span class="hljs-comment">-- 按时间分区：游戏活动按天/周归档，便于清理冷数据</span><br><span class="hljs-keyword">PARTITION</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">RANGE</span> (TO_DAYS(join_time)) (<br>  <span class="hljs-keyword">PARTITION</span> p202512 <span class="hljs-keyword">VALUES</span> LESS THAN (TO_DAYS(<span class="hljs-string">&#x27;2025-12-01&#x27;</span>)),<br>  <span class="hljs-keyword">PARTITION</span> p20251205 <span class="hljs-keyword">VALUES</span> LESS THAN (TO_DAYS(<span class="hljs-string">&#x27;2025-12-06&#x27;</span>)),<br>  <span class="hljs-keyword">PARTITION</span> p20251210 <span class="hljs-keyword">VALUES</span> LESS THAN MAXVALUE<br>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-TiDB-性能优化（适配-7000-QPS-读写）"><a href="#2-TiDB-性能优化（适配-7000-QPS-读写）" class="headerlink" title="2. TiDB 性能优化（适配 7000+ QPS 读写）"></a>2. TiDB 性能优化（适配 7000+ QPS 读写）</h3><h4 id="（1）读写分离（读请求走-TiFlash）"><a href="#（1）读写分离（读请求走-TiFlash）" class="headerlink" title="（1）读写分离（读请求走 TiFlash）"></a>（1）读写分离（读请求走 TiFlash）</h4><p>游戏活动的「配置查询、数据统计」等读请求，路由到 TiFlash（TiDB 列存引擎），减轻 TiKV 压力：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// utils/tidb_read.js（读库连接，指向 TiFlash）</span><br><span class="hljs-keyword">const</span> mysql2 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mysql2/promise&#x27;</span>);<br><span class="hljs-keyword">const</span> readPool = mysql2.<span class="hljs-title function_">createPool</span>(&#123;<br>  <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;tidb-flash-host&#x27;</span>,<br>  <span class="hljs-attr">port</span>: <span class="hljs-number">4000</span>,<br>  <span class="hljs-attr">user</span>: <span class="hljs-string">&#x27;root&#x27;</span>,<br>  <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;xxx&#x27;</span>,<br>  <span class="hljs-attr">database</span>: <span class="hljs-string">&#x27;game_activity&#x27;</span>,<br>  <span class="hljs-attr">connectionLimit</span>: <span class="hljs-number">50</span>,<br>  <span class="hljs-comment">// 强制走 TiFlash 读取</span><br>  <span class="hljs-attr">initSql</span>: [<span class="hljs-string">&#x27;SET tidb_isolation_read_engines = &quot;tiflash&quot;&#x27;</span>]<br>&#125;);<br><br><span class="hljs-comment">// 业务中区分读写：查配置走读库，写操作走主库</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getActivityConfig</span>(<span class="hljs-params">activityId</span>) &#123;<br>  <span class="hljs-keyword">const</span> [rows] = <span class="hljs-keyword">await</span> readPool.<span class="hljs-title function_">query</span>(<span class="hljs-string">&#x27;SELECT * FROM activity_config WHERE id = ?&#x27;</span>, [activityId]);<br>  <span class="hljs-keyword">return</span> rows[<span class="hljs-number">0</span>];<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="（2）避免大事务-短事务优化"><a href="#（2）避免大事务-短事务优化" class="headerlink" title="（2）避免大事务 + 短事务优化"></a>（2）避免大事务 + 短事务优化</h4><p>游戏活动的事务（如用户参与）必须「短、小」，避免持有锁时间过长：</p>
+<ul>
+<li>事务仅包含核心操作（扣减次数 + 记录参与），奖励发放等非核心逻辑异步化；</li>
+<li>禁用 <code>SELECT FOR UPDATE</code> 等悲观锁，改用乐观锁（TiDB 默认乐观事务）；</li>
+<li>设置事务超时时间：<code>SET tidb_txn_mode = &#39;optimistic&#39;; SET innodb_lock_wait_timeout = 10;</code>。</li>
+</ul>
+<h4 id="（3）批量操作减少-SQL-执行次数"><a href="#（3）批量操作减少-SQL-执行次数" class="headerlink" title="（3）批量操作减少 SQL 执行次数"></a>（3）批量操作减少 SQL 执行次数</h4><p>高并发下，批量插入&#x2F;更新可大幅减少 TiDB 连接开销，比如批量记录用户参与：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 批量插入用户参与记录（适配活动秒杀场景）</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">batchInsertUserActivity</span>(<span class="hljs-params">list</span>) &#123;<br>  <span class="hljs-comment">// list = [&#123;userId: 1, activityId: 1&#125;, ...]</span><br>  <span class="hljs-keyword">const</span> values = list.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> <span class="hljs-string">`(<span class="hljs-subst">$&#123;item.userId&#125;</span>, <span class="hljs-subst">$&#123;item.activityId&#125;</span>, NOW())`</span>).<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;,&#x27;</span>);<br>  <span class="hljs-keyword">const</span> sql = <span class="hljs-string">`INSERT INTO user_activity (user_id, activity_id, join_time) VALUES <span class="hljs-subst">$&#123;values&#125;</span>`</span>;<br>  <span class="hljs-keyword">await</span> tidb.<span class="hljs-title function_">query</span>(sql);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="四、缓存策略（Redis-扛-90-读请求）"><a href="#四、缓存策略（Redis-扛-90-读请求）" class="headerlink" title="四、缓存策略（Redis 扛 90%+ 读请求）"></a>四、缓存策略（Redis 扛 90%+ 读请求）</h2><p>游戏活动 80%+ 的请求是「读活动配置、查用户参与状态」，需通过 Redis 缓存减少 TiDB 压力：</p>
+<h3 id="1-核心缓存-Key-设计（规范-易维护）"><a href="#1-核心缓存-Key-设计（规范-易维护）" class="headerlink" title="1. 核心缓存 Key 设计（规范 + 易维护）"></a>1. 核心缓存 Key 设计（规范 + 易维护）</h3><table>
+<thead>
+<tr>
+<th>缓存 Key</th>
+<th>存储内容</th>
+<th>过期时间</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>activity:config:&#123;id&#125;</code></td>
+<td>活动配置 JSON</td>
+<td>1h</td>
+<td>配置变更时主动删除缓存</td>
+</tr>
+<tr>
+<td><code>activity:status:&#123;id&#125;</code></td>
+<td>活动状态（active&#x2F;end）</td>
+<td>5m</td>
+<td>定时刷新（避免状态不一致）</td>
+</tr>
+<tr>
+<td><code>activity:join:&#123;aid&#125;:&#123;uid&#125;</code></td>
+<td>用户参与状态</td>
+<td>1d</td>
+<td>参与成功后写入，幂等校验</td>
+</tr>
+<tr>
+<td><code>activity:remain:&#123;id&#125;</code></td>
+<td>活动剩余参与次数</td>
+<td>10s</td>
+<td>短过期，减少不一致风险</td>
+</tr>
+</tbody></table>
+<h3 id="2-缓存问题防护（击穿-x2F-穿透-x2F-雪崩）"><a href="#2-缓存问题防护（击穿-x2F-穿透-x2F-雪崩）" class="headerlink" title="2. 缓存问题防护（击穿&#x2F;穿透&#x2F;雪崩）"></a>2. 缓存问题防护（击穿&#x2F;穿透&#x2F;雪崩）</h3><h4 id="（1）缓存穿透（查询不存在的活动ID）"><a href="#（1）缓存穿透（查询不存在的活动ID）" class="headerlink" title="（1）缓存穿透（查询不存在的活动ID）"></a>（1）缓存穿透（查询不存在的活动ID）</h4><p>用布隆过滤器过滤不存在的活动ID，避免请求打到 TiDB：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 初始化布隆过滤器（RedisBloom 模块）</span><br><span class="hljs-keyword">const</span> &#123; <span class="hljs-title class_">BloomFilter</span> &#125; = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;redisbloom&#x27;</span>);<br><span class="hljs-keyword">const</span> bf = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BloomFilter</span>(redis);<br><br><span class="hljs-comment">// 活动创建时添加到布隆过滤器</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">addActivityToBF</span>(<span class="hljs-params">activityId</span>) &#123;<br>  <span class="hljs-keyword">await</span> bf.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;activity:bf&#x27;</span>, activityId);<br>&#125;<br><br><span class="hljs-comment">// 查询活动配置前先查布隆过滤器</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getActivityConfig</span>(<span class="hljs-params">activityId</span>) &#123;<br>  <span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> bf.<span class="hljs-title function_">exists</span>(<span class="hljs-string">&#x27;activity:bf&#x27;</span>, activityId);<br>  <span class="hljs-keyword">if</span> (!exists) &#123;<br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;活动不存在&#x27;</span>); <span class="hljs-comment">// 直接返回，不查DB</span><br>  &#125;<br>  <span class="hljs-comment">// 后续查缓存/DB...</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="（2）缓存击穿（热点活动ID缓存过期）"><a href="#（2）缓存击穿（热点活动ID缓存过期）" class="headerlink" title="（2）缓存击穿（热点活动ID缓存过期）"></a>（2）缓存击穿（热点活动ID缓存过期）</h4><p>对热点活动配置，设置「永不过期 + 后台定时刷新」，避免过期瞬间大量请求打 TiDB：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 定时刷新热点活动缓存（每30分钟）</span><br><span class="hljs-built_in">setInterval</span>(<span class="hljs-keyword">async</span> () =&gt; &#123;<br>  <span class="hljs-keyword">const</span> hotActivityIds = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]; <span class="hljs-comment">// 热点活动ID（可从监控获取）</span><br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> id <span class="hljs-keyword">of</span> hotActivityIds) &#123;<br>    <span class="hljs-keyword">const</span> config = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getActivityConfigFromDB</span>(id);<br>    <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">set</span>(<span class="hljs-string">`activity:config:<span class="hljs-subst">$&#123;id&#125;</span>`</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(config));<br>  &#125;<br>&#125;, <span class="hljs-number">30</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>);<br></code></pre></td></tr></table></figure>
+
+<h4 id="（3）缓存雪崩（大量缓存同时过期）"><a href="#（3）缓存雪崩（大量缓存同时过期）" class="headerlink" title="（3）缓存雪崩（大量缓存同时过期）"></a>（3）缓存雪崩（大量缓存同时过期）</h4><p>缓存过期时间添加随机值（±10分钟），避免同一时间大量缓存失效：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 写入缓存时添加随机过期时间</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">setActivityCache</span>(<span class="hljs-params">activityId, data</span>) &#123;<br>  <span class="hljs-keyword">const</span> expire = <span class="hljs-number">3600</span> + <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">floor</span>(<span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * <span class="hljs-number">600</span>); <span class="hljs-comment">// 1h ±10min</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">set</span>(<span class="hljs-string">`activity:config:<span class="hljs-subst">$&#123;activityId&#125;</span>`</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(data), <span class="hljs-string">&#x27;EX&#x27;</span>, expire);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="五、限流熔断与峰值治理"><a href="#五、限流熔断与峰值治理" class="headerlink" title="五、限流熔断与峰值治理"></a>五、限流熔断与峰值治理</h2><p>游戏活动易出现突发峰值（如开服、秒杀），需通过「限流 + 熔断」保护服务：</p>
+<h3 id="1-分布式限流（Redis-令牌桶）"><a href="#1-分布式限流（Redis-令牌桶）" class="headerlink" title="1. 分布式限流（Redis 令牌桶）"></a>1. 分布式限流（Redis 令牌桶）</h3><p>复用前文的 Redis 分布式限流中间件，针对活动接口设置限流规则：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// middleware/rateLimit.js（适配游戏活动）</span><br><span class="hljs-keyword">const</span> redisRateLimit = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./redisRateLimit&#x27;</span>);<br><span class="hljs-comment">// 活动参与接口：单用户 10 次/分钟，单活动 1000 次/秒</span><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = <span class="hljs-title function_">redisRateLimit</span>(&#123;<br>  <span class="hljs-attr">redis</span>: &#123; <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;redis-cluster-host&#x27;</span> &#125;,<br>  <span class="hljs-attr">capacity</span>: <span class="hljs-number">1000</span>, <span class="hljs-comment">// 令牌桶容量</span><br>  <span class="hljs-attr">refillRate</span>: <span class="hljs-number">1000</span>, <span class="hljs-comment">// 1000 个/秒</span><br>  <span class="hljs-attr">limitKey</span>: <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> &#123;<br>    <span class="hljs-comment">// 按活动ID+用户ID组合限流</span><br>    <span class="hljs-keyword">const</span> &#123; activityId, userId &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">`activity:limit:<span class="hljs-subst">$&#123;activityId&#125;</span>:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br>  &#125;,<br>  <span class="hljs-attr">whiteList</span>: [<span class="hljs-string">&#x27;admin_user_id&#x27;</span>] <span class="hljs-comment">// 管理员白名单</span><br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-熔断降级（Hystrix-js）"><a href="#2-熔断降级（Hystrix-js）" class="headerlink" title="2. 熔断降级（Hystrix-js）"></a>2. 熔断降级（Hystrix-js）</h3><p>当 TiDB&#x2F;Redis 异常时，熔断接口并返回降级结果（如“活动暂不可用”），避免服务雪崩：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Hystrix</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hystrixjs&#x27;</span>).<span class="hljs-property">HystrixCommand</span>;<br><br><span class="hljs-comment">// 封装活动参与接口为熔断命令</span><br><span class="hljs-keyword">const</span> joinActivityCommand = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hystrix</span>.<span class="hljs-title class_">CommandFactory</span>()<br>  .<span class="hljs-title function_">setCommandName</span>(<span class="hljs-string">&#x27;joinActivity&#x27;</span>)<br>  .<span class="hljs-built_in">setTimeout</span>(<span class="hljs-number">1000</span>) <span class="hljs-comment">// 超时时间1s</span><br>  .<span class="hljs-title function_">setErrorThresholdPercentage</span>(<span class="hljs-number">50</span>) <span class="hljs-comment">// 错误率50%触发熔断</span><br>  .<span class="hljs-title function_">setSleepWindow</span>(<span class="hljs-number">5000</span>) <span class="hljs-comment">// 熔断后5s尝试恢复</span><br>  .<span class="hljs-title function_">setCircuitBreakerRequestVolumeThreshold</span>(<span class="hljs-number">100</span>) <span class="hljs-comment">// 100次请求后触发熔断</span><br>  .<span class="hljs-title function_">run</span>(<span class="hljs-keyword">async</span> (activityId, userId) =&gt; &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> activityService.<span class="hljs-title function_">joinActivity</span>(activityId, userId);<br>  &#125;)<br>  .<span class="hljs-title function_">fallback</span>(<span class="hljs-keyword">async</span> (error) =&gt; &#123;<br>    <span class="hljs-comment">// 降级逻辑：返回友好提示，记录错误</span><br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;活动参与熔断:&#x27;</span>, error);<br>    <span class="hljs-keyword">return</span> &#123; <span class="hljs-attr">code</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;活动火爆，请稍后再试&#x27;</span> &#125;;<br>  &#125;)<br>  .<span class="hljs-title function_">build</span>();<br><br><span class="hljs-comment">// Koa 路由中使用</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/join&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; activityId, userId &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> joinActivityCommand.<span class="hljs-title function_">execute</span>(activityId, userId);<br>  ctx.<span class="hljs-property">body</span> = result;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h2 id="六、监控与容灾（保障-7×24-可用）"><a href="#六、监控与容灾（保障-7×24-可用）" class="headerlink" title="六、监控与容灾（保障 7×24 可用）"></a>六、监控与容灾（保障 7×24 可用）</h2><h3 id="1-全链路监控"><a href="#1-全链路监控" class="headerlink" title="1. 全链路监控"></a>1. 全链路监控</h3><ul>
+<li><strong>应用层</strong>：监控 Koa 进程数、QPS、响应耗时、错误率（Prometheus + Grafana）；</li>
+<li><strong>数据库层</strong>：监控 TiDB QPS、事务成功率、锁等待时间、TiFlash 同步延迟；</li>
+<li><strong>缓存层</strong>：监控 Redis 命中率、内存使用率、连接数、缓存穿透次数；</li>
+<li><strong>日志</strong>：通过 ELK 收集 Koa 日志、TiDB 慢查询日志，便于问题溯源。</li>
+</ul>
+<h3 id="2-容灾设计"><a href="#2-容灾设计" class="headerlink" title="2. 容灾设计"></a>2. 容灾设计</h3><ul>
+<li><strong>Koa 集群</strong>：多实例部署，单个实例崩溃不影响整体服务；</li>
+<li><strong>TiDB 集群</strong>：至少 3 个 TiKV 节点，开启 Raft 副本（默认3副本），单节点故障自动切换；</li>
+<li><strong>Redis 集群</strong>：主从+哨兵，主节点故障自动切换到从节点；</li>
+<li><strong>数据备份</strong>：TiDB 开启定时备份（br 工具），每天全量备份 + 增量备份；</li>
+<li><strong>降级开关</strong>：配置中心（如 Nacos）设置活动降级开关，突发故障时关闭非核心活动。</li>
+</ul>
+<h2 id="七、性能压测与调优（验证-7000-QPS）"><a href="#七、性能压测与调优（验证-7000-QPS）" class="headerlink" title="七、性能压测与调优（验证 7000+ QPS）"></a>七、性能压测与调优（验证 7000+ QPS）</h2><h3 id="1-压测工具与指标"><a href="#1-压测工具与指标" class="headerlink" title="1. 压测工具与指标"></a>1. 压测工具与指标</h3><p>用 <code>wrk</code>&#x2F;<code>jmeter</code> 压测活动核心接口，关注核心指标：</p>
+<ul>
+<li>QPS：目标 7000+，峰值 10000+；</li>
+<li>响应耗时：99% 响应 &lt; 200ms；</li>
+<li>错误率：&lt; 0.1%；</li>
+<li>TiDB 读写 QPS：写 &lt; 1000 QPS（缓存扛读），读 &lt; 500 QPS（TiFlash 分担）。</li>
+</ul>
+<h3 id="2-调优方向"><a href="#2-调优方向" class="headerlink" title="2. 调优方向"></a>2. 调优方向</h3><ul>
+<li>若 QPS 不达标：增加 Koa 实例数、扩大 TiDB&#x2F;Redis 连接池、优化 SQL 索引；</li>
+<li>若响应耗时高：减少中间件层级、优化异步逻辑、增加缓存命中率；</li>
+<li>若 TiDB 压力大：扩大 TiKV 节点数、增加 TiFlash 副本、优化表分区。</li>
+</ul>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><p>基于 Koa + TiDB 构建 7000+ QPS 游戏活动后端，核心是「<strong>缓存扛读、TiDB 扛写、应用无状态、异步解耦、限流熔断</strong>」：</p>
+<ol>
+<li>Koa 层通过集群部署、中间件优化、异步并行，适配高并发请求处理；</li>
+<li>TiDB 层利用分布式特性、分区表、读写分离，承载高并发读写和数据一致性；</li>
+<li>Redis 层缓存热点数据，防护缓存问题，减少数据库压力；</li>
+<li>限流熔断 + 监控容灾，保障服务稳定性和峰值应对能力。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Koa/" class="category-chain-item">Koa</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/%E7%BC%93%E5%AD%98/">#缓存</a>
+      
+        <a href="/tags/Koa/">#Koa</a>
+      
+        <a href="/tags/Redis/">#Redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>基于 Koa 构建 7000+ QPS 游戏活动后端</div>
+      <div>https://zjw93615.github.io/2025/12/06/Koa/基于 Koa构建 7000+ QPS 游戏活动后端/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/Redis/Redis%E7%9F%A5%E8%AF%86%E7%82%B9/" title="加锁：key=lockKey，value=唯一标识（如UUID），nx（不存在才设置），ex（过期时间）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">加锁：key=lockKey，value=唯一标识（如UUID），nx（不存在才设置），ex（过期时间）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/Webpack/Tree%20Shaking/" title="Webpack 实现 Tree Shaking 详解">
+                        <span class="hidden-mobile">Webpack 实现 Tree Shaking 详解</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

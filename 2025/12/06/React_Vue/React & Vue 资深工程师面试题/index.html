@@ -1,0 +1,870 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="React &amp; Vue 资深工程师面试题（附详细解答）以下题目聚焦核心原理、性能优化、工程化、进阶特性等资深工程师考察维度，覆盖 React（含 React 18）和 Vue3 核心考点，解答兼顾原理与实践。 一、React 资深面试题1. React Fiber 架构的设计原理及解决的核心问题解答：Fiber 是 React 16 重构的核心协调（Reconciliation）引擎，解决">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React &amp; Vue 资深工程师面试题（附详细解答）">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/React_Vue/React%20&%20Vue%20%E8%B5%84%E6%B7%B1%E5%B7%A5%E7%A8%8B%E5%B8%88%E9%9D%A2%E8%AF%95%E9%A2%98/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="React &amp; Vue 资深工程师面试题（附详细解答）以下题目聚焦核心原理、性能优化、工程化、进阶特性等资深工程师考察维度，覆盖 React（含 React 18）和 Vue3 核心考点，解答兼顾原理与实践。 一、React 资深面试题1. React Fiber 架构的设计原理及解决的核心问题解答：Fiber 是 React 16 重构的核心协调（Reconciliation）引擎，解决">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:38:04.288Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="React">
+<meta property="article:tag" content="TypeScript">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="缓存">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="Vue">
+<meta property="article:tag" content="TreeShaking">
+<meta property="article:tag" content="React_Vue">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>React &amp; Vue 资深工程师面试题（附详细解答） - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="React &amp; Vue 资深工程师面试题（附详细解答）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          37 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">React &amp; Vue 资深工程师面试题（附详细解答）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="React-amp-Vue-资深工程师面试题（附详细解答）"><a href="#React-amp-Vue-资深工程师面试题（附详细解答）" class="headerlink" title="React &amp; Vue 资深工程师面试题（附详细解答）"></a>React &amp; Vue 资深工程师面试题（附详细解答）</h1><p>以下题目聚焦<strong>核心原理、性能优化、工程化、进阶特性</strong>等资深工程师考察维度，覆盖 React（含 React 18）和 Vue3 核心考点，解答兼顾原理与实践。</p>
+<h2 id="一、React-资深面试题"><a href="#一、React-资深面试题" class="headerlink" title="一、React 资深面试题"></a>一、React 资深面试题</h2><h3 id="1-React-Fiber-架构的设计原理及解决的核心问题"><a href="#1-React-Fiber-架构的设计原理及解决的核心问题" class="headerlink" title="1. React Fiber 架构的设计原理及解决的核心问题"></a>1. React Fiber 架构的设计原理及解决的核心问题</h3><h4 id="解答："><a href="#解答：" class="headerlink" title="解答："></a>解答：</h4><p>Fiber 是 React 16 重构的核心协调（Reconciliation）引擎，解决了传统 <code>Stack Reconciler</code> 的核心痛点：</p>
+<ul>
+<li><strong>旧架构问题</strong>：递归遍历虚拟 DOM 树，更新过程不可中断，长任务（如复杂列表渲染）会阻塞主线程（UI 渲染、事件响应），导致页面卡顿。</li>
+<li><strong>Fiber 核心设计</strong>：<ol>
+<li><strong>数据结构</strong>：将递归的树结构改为<strong>链表结构</strong>（Fiber 节点包含 <code>child</code>&#x2F;<code>sibling</code>&#x2F;<code>return</code> 指针），支持“中断-恢复”遍历；</li>
+<li><strong>可中断调度</strong>：基于时间切片（Time Slicing，React 18 内置），每次只执行一个小任务，剩余时间交还主线程，超过 5ms 则暂停；</li>
+<li><strong>优先级调度</strong>：通过 Lane 模型（React 18 替代旧的 expirationTime）区分任务优先级（如用户输入 &gt; 动画 &gt; 数据请求 &gt; 低优渲染），高优任务可抢占低优任务；</li>
+<li><strong>双缓存 Fiber 树</strong>：当前渲染的 <code>current Fiber</code> 树 + 待更新的 <code>workInProgress Fiber</code> 树，更新完成后切换，避免中间状态。</li>
+</ol>
+</li>
+<li><strong>执行流程</strong>：<ul>
+<li>调度阶段（Scheduler）：接收任务，按优先级分配时间片；</li>
+<li>协调阶段（Reconciliation）：遍历 Fiber 树，对比虚拟 DOM，标记更新（可中断）；</li>
+<li>提交阶段（Commit）：将协调阶段的更新应用到真实 DOM（不可中断）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-React-Hooks-闭包陷阱的成因及解决方案"><a href="#2-React-Hooks-闭包陷阱的成因及解决方案" class="headerlink" title="2. React Hooks 闭包陷阱的成因及解决方案"></a>2. React Hooks 闭包陷阱的成因及解决方案</h3><h4 id="解答：-1"><a href="#解答：-1" class="headerlink" title="解答："></a>解答：</h4><ul>
+<li><strong>成因</strong>：函数式组件每次渲染都是独立闭包，Hooks 会“捕获”当前渲染周期的变量&#x2F;状态；若异步操作（定时器、网络请求）引用了旧状态，会导致读取到过期值。<br>示例：<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Counter</span>(<span class="hljs-params"></span>) &#123;<br>  <span class="hljs-keyword">const</span> [count, setCount] = <span class="hljs-title function_">useState</span>(<span class="hljs-number">0</span>);<br>  <span class="hljs-title function_">useEffect</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-keyword">const</span> timer = <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(count); <span class="hljs-comment">// 点击按钮后，定时器仍输出 0（旧值）</span><br>    &#125;, <span class="hljs-number">1000</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">clearTimeout</span>(timer);<br>  &#125;, []); <span class="hljs-comment">// 依赖为空，闭包捕获初始 count</span><br>  <span class="hljs-keyword">return</span> <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">&#123;()</span> =&gt;</span> setCount(count + 1)&#125;&gt;点击<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><strong>解决方案</strong>：<ol>
+<li><strong>useRef 保存最新值</strong>：ref 的 <code>.current</code> 不受闭包影响，始终指向最新值；</li>
+<li><strong>useCallback&#x2F;useMemo 缓存依赖</strong>：补全 useEffect 依赖项，结合 useCallback 缓存回调；</li>
+<li><strong>函数式更新</strong>：useState 的更新函数接收旧状态，避免直接引用闭包变量；</li>
+<li><strong>useEvent（React 18+）</strong>：封装异步回调，自动绑定最新状态（替代自定义 ref 方案）。</li>
+</ol>
+</li>
+</ul>
+<h3 id="3-React-18-并发渲染（Concurrent-Rendering）的核心思想及应用场景"><a href="#3-React-18-并发渲染（Concurrent-Rendering）的核心思想及应用场景" class="headerlink" title="3. React 18 并发渲染（Concurrent Rendering）的核心思想及应用场景"></a>3. React 18 并发渲染（Concurrent Rendering）的核心思想及应用场景</h3><h4 id="解答：-2"><a href="#解答：-2" class="headerlink" title="解答："></a>解答：</h4><ul>
+<li><strong>核心思想</strong>：“渲染可中断”，React 可在渲染过程中暂停、放弃、恢复渲染，优先处理高优先级任务（如用户输入、动画），而非一次性完成所有渲染，提升交互流畅度。</li>
+<li><strong>核心特性</strong>：<ul>
+<li><code>startTransition</code>：标记低优先级更新（如搜索结果渲染），不阻塞高优操作；</li>
+<li><code>useDeferredValue</code>：延迟更新值，为高优任务让路；</li>
+<li><code>Suspense</code> 增强：支持数据请求 Suspense（结合 React Query&#x2F;SWR）、流式 SSR；</li>
+<li>自动批处理（Automatic Batching）：合并多个 setState，减少渲染次数。</li>
+</ul>
+</li>
+<li><strong>应用场景</strong>：<ol>
+<li>搜索框输入：输入（高优）即时响应，搜索结果（低优）延迟渲染；</li>
+<li>大数据列表：滚动加载时，列表渲染不阻塞滚动事件；</li>
+<li>模态框&#x2F;弹窗：弹窗渲染不阻塞页面交互。</li>
+</ol>
+</li>
+</ul>
+<h3 id="4-React-SSR（服务端渲染）与-Next-js-核心实现原理"><a href="#4-React-SSR（服务端渲染）与-Next-js-核心实现原理" class="headerlink" title="4. React SSR（服务端渲染）与 Next.js 核心实现原理"></a>4. React SSR（服务端渲染）与 Next.js 核心实现原理</h3><h4 id="解答：-3"><a href="#解答：-3" class="headerlink" title="解答："></a>解答：</h4><ul>
+<li><strong>SSR 对比 CSR</strong>：<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>SSR（服务端渲染）</th>
+<th>CSR（客户端渲染）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首屏加载</td>
+<td>快（服务端返回完整 HTML）</td>
+<td>慢（需下载 JS 后渲染）</td>
+</tr>
+<tr>
+<td>SEO</td>
+<td>友好（HTML 含完整内容）</td>
+<td>差（初始 HTML 为空）</td>
+</tr>
+<tr>
+<td>交互体验</td>
+<td>需 hydrate 注水后交互</td>
+<td>交互流畅（客户端渲染）</td>
+</tr>
+<tr>
+<td>服务端压力</td>
+<td>大（每次请求生成 HTML）</td>
+<td>小（仅提供静态资源）</td>
+</tr>
+</tbody></table>
+</li>
+<li><strong>Next.js 核心原理</strong>：<ol>
+<li><strong>文件路由</strong>：基于 <code>pages</code>&#x2F;<code>app</code> 目录自动生成路由，无需手动配置；</li>
+<li><strong>数据获取</strong>：<ul>
+<li><code>getServerSideProps</code>：每次请求时服务端获取数据，纯 SSR；</li>
+<li><code>getStaticProps</code>+<code>getStaticPaths</code>：构建时预渲染（SSG），适合静态页面；</li>
+<li><code>ISR（增量静态再生）</code>：缓存 SSG 页面，定时&#x2F;按需更新，兼顾性能与实时性；</li>
+</ul>
+</li>
+<li><strong>渲染流程</strong>：<ul>
+<li>服务端：<code>ReactDOMServer.renderToString</code> 生成 HTML 字符串，返回给客户端；</li>
+<li>客户端：<code>ReactDOM.hydrate</code> 复用服务端 HTML，绑定事件（注水），完成交互激活。</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<h2 id="二、Vue-资深面试题"><a href="#二、Vue-资深面试题" class="headerlink" title="二、Vue 资深面试题"></a>二、Vue 资深面试题</h2><h3 id="1-Vue3-响应式系统重构原理（对比-Vue2）"><a href="#1-Vue3-响应式系统重构原理（对比-Vue2）" class="headerlink" title="1. Vue3 响应式系统重构原理（对比 Vue2）"></a>1. Vue3 响应式系统重构原理（对比 Vue2）</h3><h4 id="解答：-4"><a href="#解答：-4" class="headerlink" title="解答："></a>解答：</h4><ul>
+<li><strong>Vue2 响应式</strong>：基于 <code>Object.defineProperty</code>，存在天然缺陷：<ol>
+<li>只能监听对象属性，无法监听数组下标&#x2F;长度、新增&#x2F;删除属性（需 <code>$set/$delete</code>）；</li>
+<li>需递归遍历对象所有属性，初始化性能差；</li>
+<li>无法监听嵌套对象的新增属性。</li>
+</ol>
+</li>
+<li><strong>Vue3 响应式</strong>：基于 <code>Proxy + Reflect</code>，重构后优势显著：<ol>
+<li><strong>代理整个对象</strong>：无需遍历属性，支持数组（下标&#x2F;长度）、新增&#x2F;删除属性的监听；</li>
+<li><strong>懒监听</strong>：嵌套对象仅在访问时才递归代理，初始化性能提升；</li>
+<li><strong>类型友好</strong>：兼容 ES6 语法，更好支持 TypeScript；</li>
+<li><strong>原始值处理</strong>：通过 <code>ref</code> 包裹原始值（<code>value</code> 访问），弥补 Proxy 无法代理原始值的缺陷。</li>
+</ol>
+</li>
+<li><strong>核心流程</strong>：<ol>
+<li><strong>依赖收集（track）</strong>：组件渲染时访问响应式数据，触发 <code>get</code> 拦截，收集当前组件的 <code>effect</code>（副作用函数）；</li>
+<li><strong>触发更新（trigger）</strong>：数据修改时触发 <code>set</code> 拦截，执行收集的 <code>effect</code>，重新渲染组件。</li>
+</ol>
+</li>
+</ul>
+<h3 id="2-Vue3-Composition-API-设计初衷及与-Options-API-的对比"><a href="#2-Vue3-Composition-API-设计初衷及与-Options-API-的对比" class="headerlink" title="2. Vue3 Composition API 设计初衷及与 Options API 的对比"></a>2. Vue3 Composition API 设计初衷及与 Options API 的对比</h3><h4 id="解答：-5"><a href="#解答：-5" class="headerlink" title="解答："></a>解答：</h4><ul>
+<li><strong>设计初衷</strong>：解决 Options API 的核心痛点：<ol>
+<li>复杂组件逻辑分散（data&#x2F;methods&#x2F;computed&#x2F;watch），难以维护；</li>
+<li>逻辑复用只能通过 mixin（命名冲突、来源不清晰）；</li>
+<li>对 TypeScript 支持差（Options API 无法精准推导类型）。</li>
+</ol>
+</li>
+<li><strong>核心对比</strong>：<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Options API</th>
+<th>Composition API</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>逻辑组织</td>
+<td>按选项分类，分散</td>
+<td>按功能聚合，可抽离 Composables</td>
+</tr>
+<tr>
+<td>逻辑复用</td>
+<td>mixin（易冲突、难溯源）</td>
+<td>组合函数（Composables，无冲突）</td>
+</tr>
+<tr>
+<td>TS 支持</td>
+<td>弱（需手动类型标注）</td>
+<td>强（自动类型推导）</td>
+</tr>
+<tr>
+<td>学习成本</td>
+<td>低（新手友好）</td>
+<td>稍高（需理解闭包&#x2F;响应式）</td>
+</tr>
+</tbody></table>
+</li>
+<li><strong>最佳实践</strong>：<ol>
+<li>抽离通用逻辑为 Composables（如 <code>useRequest</code>、<code>usePagination</code>）；</li>
+<li>避免 setup 函数过于臃肿，拆分多个组合函数；</li>
+<li>优先使用 <code>ref</code>（原始值）&#x2F;<code>shallowRef</code>（浅层引用），减少不必要的深层响应式。</li>
+</ol>
+</li>
+</ul>
+<h3 id="3-Vue3-虚拟-DOM-与-diff-算法的优化点"><a href="#3-Vue3-虚拟-DOM-与-diff-算法的优化点" class="headerlink" title="3. Vue3 虚拟 DOM 与 diff 算法的优化点"></a>3. Vue3 虚拟 DOM 与 diff 算法的优化点</h3><h4 id="解答：-6"><a href="#解答：-6" class="headerlink" title="解答："></a>解答：</h4><p>Vue3 重写了虚拟 DOM 模块，核心优化围绕“减少不必要的对比”：</p>
+<ol>
+<li><strong>静态提升（hoistStatic）</strong>：<ul>
+<li>静态节点（如 <code>&lt;div&gt;文本&lt;/div&gt;</code>）被提升到渲染函数外，避免每次渲染重新创建 VNode；</li>
+<li>静态属性（如 <code>class=&quot;btn&quot;</code>）同样被缓存，减少内存占用。</li>
+</ul>
+</li>
+<li><strong>PatchFlags（补丁标记）</strong>：<ul>
+<li>为动态 VNode 标记更新类型（如 <code>TEXT</code>&#x2F;<code>CLASS</code>&#x2F;<code>STYLE</code>&#x2F;<code>PROPS</code>），diff 时仅对比标记的属性，无需全量对比；</li>
+<li>示例：<code>&lt;div :text=&quot;msg&quot;&gt;文本&lt;/div&gt;</code> 会被标记为 <code>TEXT</code>，仅对比文本内容。</li>
+</ul>
+</li>
+<li><strong>缓存事件处理函数（cacheHandlers）</strong>：<ul>
+<li>避免每次渲染重新创建事件回调（如 <code>@click=&quot;handleClick&quot;</code>），减少 VNode 差异。</li>
+</ul>
+</li>
+<li><strong>双端对比优化</strong>：<ul>
+<li>延续 Vue2 的双端 diff 算法，新增“最长递增子序列”优化，减少节点移动次数（针对列表渲染）。</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-Nuxt3-核心特性及-SSR-实现原理"><a href="#4-Nuxt3-核心特性及-SSR-实现原理" class="headerlink" title="4. Nuxt3 核心特性及 SSR 实现原理"></a>4. Nuxt3 核心特性及 SSR 实现原理</h3><h4 id="解答：-7"><a href="#解答：-7" class="headerlink" title="解答："></a>解答：</h4><ul>
+<li><strong>Nuxt3 核心特性</strong>：<ol>
+<li>基于 Vue3 + Vite，构建速度大幅提升；</li>
+<li>自动导入：组件、Composables、API 无需手动 import；</li>
+<li>服务器组件（Server Components）：组件逻辑运行在服务端，减少客户端 JS 体积；</li>
+<li>孤岛架构（Island Architecture）：仅交互组件在客户端激活，静态组件保持服务端渲染状态；</li>
+<li>数据获取：<code>useAsyncData</code>&#x2F;<code>useFetch</code> 统一处理异步数据，支持 SSR&#x2F;CSR 兼容。</li>
+</ol>
+</li>
+<li><strong>SSR 实现原理</strong>：<ol>
+<li>客户端请求 → Nuxt 服务端执行 <code>useAsyncData</code> 获取数据；</li>
+<li>通过 <code>vue/server-renderer</code> 的 <code>renderToString</code> 生成 HTML 字符串；</li>
+<li>服务端返回 HTML + 数据（序列化到 <code>window.__NUXT__</code>）；</li>
+<li>客户端执行 <code>hydrate</code> 注水，复用服务端 HTML，绑定事件，完成激活。</li>
+</ol>
+</li>
+</ul>
+<h2 id="三、通用进阶考点（React-x2F-Vue-均会考察）"><a href="#三、通用进阶考点（React-x2F-Vue-均会考察）" class="headerlink" title="三、通用进阶考点（React&#x2F;Vue 均会考察）"></a>三、通用进阶考点（React&#x2F;Vue 均会考察）</h2><h3 id="1-前端性能优化（全维度）"><a href="#1-前端性能优化（全维度）" class="headerlink" title="1. 前端性能优化（全维度）"></a>1. 前端性能优化（全维度）</h3><ul>
+<li><strong>渲染层</strong>：虚拟列表（react-window&#x2F;vue-virtual-scroller）、避免重渲染（memo&#x2F;useMemo&#x2F;keep-alive）、骨架屏；</li>
+<li><strong>网络层</strong>：接口缓存（SWR&#x2F;React Query&#x2F;useRequest）、HTTP&#x2F;2、预加载（preload&#x2F;prefetch）、接口合并；</li>
+<li><strong>构建层</strong>：代码分割（Code Splitting）、Tree Shaking、Vite 按需编译、压缩混淆（Terser）；</li>
+<li><strong>运行层</strong>：防抖节流、懒加载（图片&#x2F;组件）、Web Worker 处理耗时计算。</li>
+</ul>
+<h3 id="2-跨端方案对比（React-Native-vs-Vue3-UniApp）"><a href="#2-跨端方案对比（React-Native-vs-Vue3-UniApp）" class="headerlink" title="2. 跨端方案对比（React Native vs Vue3 + UniApp）"></a>2. 跨端方案对比（React Native vs Vue3 + UniApp）</h3><ul>
+<li>React Native：基于 JSX，原生组件渲染，生态丰富，性能接近原生，但需适配多端；</li>
+<li>UniApp：基于 Vue3，一次编写多端编译（小程序&#x2F;APP&#x2F;H5），开发效率高，但复杂场景性能略逊于 RN。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/React-Vue/" class="category-chain-item">React_Vue</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/React/">#React</a>
+      
+        <a href="/tags/TypeScript/">#TypeScript</a>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/%E7%BC%93%E5%AD%98/">#缓存</a>
+      
+        <a href="/tags/%E9%9D%A2%E8%AF%95/">#面试</a>
+      
+        <a href="/tags/Vue/">#Vue</a>
+      
+        <a href="/tags/TreeShaking/">#TreeShaking</a>
+      
+        <a href="/tags/React-Vue/">#React_Vue</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>React &amp; Vue 资深工程师面试题（附详细解答）</div>
+      <div>https://zjw93615.github.io/2025/12/06/React_Vue/React &amp; Vue 资深工程师面试题/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/%E9%87%8D%E6%8E%92/" title="React与Vue中的重排重绘优化策略">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">React与Vue中的重排重绘优化策略</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/React_Vue/React%20%E5%92%8C%20Vue%20%E7%9A%84%E6%A0%B8%E5%BF%83%E5%BC%82%E5%90%8C/" title="React 和 Vue 的核心异同">
+                        <span class="hidden-mobile">React 和 Vue 的核心异同</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

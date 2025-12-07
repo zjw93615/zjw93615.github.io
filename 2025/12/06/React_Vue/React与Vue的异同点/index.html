@@ -1,0 +1,917 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="React与Vue的异同点及从React转Vue的相通之处作为前端开发者，React和Vue确实是目前最主流的两个框架，它们各有特色，但也有许多相通之处。下面我将从多个维度详细分析它们的异同，并重点说明从React转到Vue时的相通之处。 一、React与Vue的相同点1. 虚拟DOM与性能优化 共同点：两者都使用虚拟DOM（Virtual DOM）+ Diff算法来提高渲染性能 原理：将UI抽象">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React与Vue的异同点及从React转Vue的相通之处">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/React_Vue/React%E4%B8%8EVue%E7%9A%84%E5%BC%82%E5%90%8C%E7%82%B9/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="React与Vue的异同点及从React转Vue的相通之处作为前端开发者，React和Vue确实是目前最主流的两个框架，它们各有特色，但也有许多相通之处。下面我将从多个维度详细分析它们的异同，并重点说明从React转到Vue时的相通之处。 一、React与Vue的相同点1. 虚拟DOM与性能优化 共同点：两者都使用虚拟DOM（Virtual DOM）+ Diff算法来提高渲染性能 原理：将UI抽象">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:18:21.951Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="React">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="Vue">
+<meta property="article:tag" content="React_Vue">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>React与Vue的异同点及从React转Vue的相通之处 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="React与Vue的异同点及从React转Vue的相通之处"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          43 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">React与Vue的异同点及从React转Vue的相通之处</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="React与Vue的异同点及从React转Vue的相通之处"><a href="#React与Vue的异同点及从React转Vue的相通之处" class="headerlink" title="React与Vue的异同点及从React转Vue的相通之处"></a>React与Vue的异同点及从React转Vue的相通之处</h1><p>作为前端开发者，React和Vue确实是目前最主流的两个框架，它们各有特色，但也有许多相通之处。下面我将从多个维度详细分析它们的异同，并重点说明从React转到Vue时的相通之处。</p>
+<h2 id="一、React与Vue的相同点"><a href="#一、React与Vue的相同点" class="headerlink" title="一、React与Vue的相同点"></a>一、React与Vue的相同点</h2><h3 id="1-虚拟DOM与性能优化"><a href="#1-虚拟DOM与性能优化" class="headerlink" title="1. 虚拟DOM与性能优化"></a>1. 虚拟DOM与性能优化</h3><ul>
+<li><strong>共同点</strong>：两者都使用虚拟DOM（Virtual DOM）+ Diff算法来提高渲染性能</li>
+<li><strong>原理</strong>：将UI抽象为轻量级的JavaScript对象树，当状态变化时，只更新需要变更的部分</li>
+<li><strong>效果</strong>：减少真实DOM操作，提升应用性能</li>
+</ul>
+<h3 id="2-组件化开发"><a href="#2-组件化开发" class="headerlink" title="2. 组件化开发"></a>2. 组件化开发</h3><ul>
+<li><strong>共同点</strong>：都采用组件化思想，将UI拆分为独立、可复用的组件</li>
+<li><strong>相似点</strong>：组件生命周期、组件通信、状态管理等概念基本一致</li>
+<li><strong>例子</strong>：React的<code>&lt;MyComponent /&gt;</code>和Vue的<code>&lt;my-component&gt;</code>都是组件化思想的体现</li>
+</ul>
+<h3 id="3-单向数据流"><a href="#3-单向数据流" class="headerlink" title="3. 单向数据流"></a>3. 单向数据流</h3><ul>
+<li><strong>共同点</strong>：都采用单向数据流设计，数据从父组件流向子组件</li>
+<li><strong>实现</strong>：父组件通过props传递数据，子组件通过事件通知父组件</li>
+</ul>
+<h3 id="4-响应式数据绑定"><a href="#4-响应式数据绑定" class="headerlink" title="4. 响应式数据绑定"></a>4. 响应式数据绑定</h3><ul>
+<li><strong>共同点</strong>：都实现了响应式数据绑定，当数据变化时自动更新视图</li>
+<li><strong>区别</strong>：Vue默认支持双向绑定，而React是单向数据流（但可通过受控组件实现类似效果）</li>
+</ul>
+<h3 id="5-生态系统与工具"><a href="#5-生态系统与工具" class="headerlink" title="5. 生态系统与工具"></a>5. 生态系统与工具</h3><ul>
+<li><strong>共同点</strong>：<ul>
+<li>都有丰富的第三方库和工具支持</li>
+<li>都支持服务端渲染（SSR）：React有Next.js，Vue有Nuxt.js</li>
+<li>都有官方构建工具：React有Create React App，Vue有Vue CLI</li>
+<li>都有成熟的路由解决方案：React Router和Vue Router</li>
+</ul>
+</li>
+</ul>
+<h2 id="二、React与Vue的不同点"><a href="#二、React与Vue的不同点" class="headerlink" title="二、React与Vue的不同点"></a>二、React与Vue的不同点</h2><h3 id="1-语法与模板"><a href="#1-语法与模板" class="headerlink" title="1. 语法与模板"></a>1. 语法与模板</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>语法</td>
+<td>JSX（JavaScript + HTML混合）</td>
+<td>模板语法（基于HTML）</td>
+</tr>
+<tr>
+<td>代码组织</td>
+<td>逻辑与视图分离（JSX中写JS，HTML结构在JSX中）</td>
+<td>逻辑、视图、样式在单文件组件中（.vue文件）</td>
+</tr>
+<tr>
+<td>例子</td>
+<td><code>&lt;div className=&quot;container&quot;&gt;Hello&lt;/div&gt;</code></td>
+<td><code>&lt;div class=&quot;container&quot;&gt;Hello&lt;/div&gt;</code></td>
+</tr>
+</tbody></table>
+<p><strong>关键区别</strong>：React的JSX需要理解”HTML在JS中”的概念，而Vue使用更接近传统HTML的模板语法。</p>
+<h3 id="2-数据绑定与状态管理"><a href="#2-数据绑定与状态管理" class="headerlink" title="2. 数据绑定与状态管理"></a>2. 数据绑定与状态管理</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据绑定</td>
+<td>单向数据流（需要手动处理表单）</td>
+<td>默认支持双向绑定（v-model）</td>
+</tr>
+<tr>
+<td>状态管理</td>
+<td>通常使用Redux等第三方库</td>
+<td>内置Vuex（官方状态管理库）</td>
+</tr>
+<tr>
+<td>表单处理</td>
+<td>受控组件（需要手动管理value和onChange）</td>
+<td>通过v-model简化表单处理</td>
+</tr>
+<tr>
+<td>状态更新</td>
+<td><code>setState</code>或Hooks（useState）</td>
+<td>通过<code>this.data</code>或<code>ref</code>直接修改</td>
+</tr>
+</tbody></table>
+<p><strong>Vue的双向绑定</strong>：<code>v-model</code>是<code>v-bind:value</code>和<code>v-on:input</code>的语法糖，使表单处理更加简洁。</p>
+<h3 id="3-设计理念"><a href="#3-设计理念" class="headerlink" title="3. 设计理念"></a>3. 设计理念</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>框架定位</td>
+<td>仅视图层库（View Layer）</td>
+<td>渐进式框架（Progressive Framework）</td>
+</tr>
+<tr>
+<td>核心理念</td>
+<td>“构建可组合的、声明式的用户界面”</td>
+<td>“为人类设计”（开发者体验优先）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>大型复杂应用，需要高度灵活性</td>
+<td>中小型项目，快速开发，开发者友好</td>
+</tr>
+</tbody></table>
+<p><strong>Vue的渐进式</strong>：Vue可以从小功能开始，逐步扩展到整个应用，而React通常需要从一开始就规划好状态管理、路由等。</p>
+<h3 id="4-组件实现"><a href="#4-组件实现" class="headerlink" title="4. 组件实现"></a>4. 组件实现</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>组件形式</td>
+<td>函数组件或类组件</td>
+<td>单文件组件（.vue）</td>
+</tr>
+<tr>
+<td>代码结构</td>
+<td>逻辑与视图混合在JSX中</td>
+<td>模板、脚本、样式在单文件中分离</td>
+</tr>
+<tr>
+<td>插槽</td>
+<td><code>props.children</code></td>
+<td><code>&lt;slot&gt;</code>插槽机制</td>
+</tr>
+<tr>
+<td>组件通信</td>
+<td>通过props和回调函数</td>
+<td>通过props和<code>$emit</code>，或Vuex</td>
+</tr>
+</tbody></table>
+<p><strong>Vue的单文件组件</strong>：<code>.vue</code>文件将模板、脚本和样式组织在一个文件中，提高了代码的可读性和组织性。</p>
+<h3 id="5-学习曲线"><a href="#5-学习曲线" class="headerlink" title="5. 学习曲线"></a>5. 学习曲线</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初学者友好度</td>
+<td>相对较高（但JSX需要适应）</td>
+<td>更友好（模板语法更接近HTML）</td>
+</tr>
+<tr>
+<td>进阶复杂度</td>
+<td>需要学习Hooks、Context等高级概念</td>
+<td>需要学习Composition API等进阶概念</td>
+</tr>
+<tr>
+<td>上手速度</td>
+<td>需要理解JSX和函数式编程</td>
+<td>可以快速上手，适合新手</td>
+</tr>
+</tbody></table>
+<h2 id="三、从React转到Vue的相通之处"><a href="#三、从React转到Vue的相通之处" class="headerlink" title="三、从React转到Vue的相通之处"></a>三、从React转到Vue的相通之处</h2><h3 id="1-组件化思想的相通"><a href="#1-组件化思想的相通" class="headerlink" title="1. 组件化思想的相通"></a>1. 组件化思想的相通</h3><ul>
+<li><strong>核心相通</strong>：React和Vue都基于组件化开发，理解React的组件思想后，Vue的组件概念很容易理解</li>
+<li><strong>实践</strong>：从React的<code>&lt;Button /&gt;</code>组件到Vue的<code>&lt;button-component&gt;</code>，组件的职责和通信方式基本一致</li>
+</ul>
+<h3 id="2-状态管理的相通"><a href="#2-状态管理的相通" class="headerlink" title="2. 状态管理的相通"></a>2. 状态管理的相通</h3><ul>
+<li><strong>核心相通</strong>：React的useState&#x2F;Redux和Vue的data&#x2F;vuex都处理状态管理</li>
+<li><strong>实践</strong>：<ul>
+<li>React的<code>useState</code> ≈ Vue的<code>data</code>或<code>ref</code></li>
+<li>React的<code>useEffect</code> ≈ Vue的<code>watch</code>和<code>computed</code></li>
+<li>React的Redux ≈ Vue的Vuex</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-生命周期钩子的相通"><a href="#3-生命周期钩子的相通" class="headerlink" title="3. 生命周期钩子的相通"></a>3. 生命周期钩子的相通</h3><ul>
+<li><strong>核心相通</strong>：两者都有类似的生命周期钩子，概念相近</li>
+<li><strong>对应关系</strong>：<ul>
+<li><code>componentDidMount</code> ≈ <code>mounted</code></li>
+<li><code>componentDidUpdate</code> ≈ <code>updated</code></li>
+<li><code>componentWillUnmount</code> ≈ <code>beforeDestroy</code>&#x2F;<code>destroyed</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="4-虚拟DOM工作原理的相通"><a href="#4-虚拟DOM工作原理的相通" class="headerlink" title="4. 虚拟DOM工作原理的相通"></a>4. 虚拟DOM工作原理的相通</h3><ul>
+<li><strong>核心相通</strong>：两者都使用虚拟DOM进行高效渲染</li>
+<li><strong>实践</strong>：理解React的Diff算法后，Vue的虚拟DOM实现也容易理解</li>
+</ul>
+<h3 id="5-代码组织方式的相通"><a href="#5-代码组织方式的相通" class="headerlink" title="5. 代码组织方式的相通"></a>5. 代码组织方式的相通</h3><ul>
+<li><strong>核心相通</strong>：React的组件目录结构和Vue的单文件组件结构在逻辑上相似</li>
+<li><strong>实践</strong>：<ul>
+<li>React的<code>components/Button.js</code> ≈ Vue的<code>components/Button.vue</code></li>
+<li>React的<code>state</code>管理 ≈ Vue的<code>data</code>或<code>setup</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="6-路由和状态管理的相通"><a href="#6-路由和状态管理的相通" class="headerlink" title="6. 路由和状态管理的相通"></a>6. 路由和状态管理的相通</h3><ul>
+<li><strong>核心相通</strong>：React Router和Vue Router都实现路由功能</li>
+<li><strong>实践</strong>：<ul>
+<li>React的<code>&lt;Route path=&quot;/home&quot; component=&#123;Home&#125; /&gt;</code> ≈ Vue的<code>&lt;router-view/&gt;</code></li>
+<li>React的<code>history.push</code> ≈ Vue的<code>this.$router.push</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="四、从React转Vue的快速上手指南"><a href="#四、从React转Vue的快速上手指南" class="headerlink" title="四、从React转Vue的快速上手指南"></a>四、从React转Vue的快速上手指南</h2><h3 id="1-从JSX到模板语法"><a href="#1-从JSX到模板语法" class="headerlink" title="1. 从JSX到模板语法"></a>1. 从JSX到模板语法</h3><ul>
+<li><strong>React</strong>：<code>&lt;div&gt;&#123;user.name&#125;&lt;/div&gt;</code></li>
+<li><strong>Vue</strong>：<code>&lt;div&gt;&#123;&#123; user.name &#125;&#125;&lt;/div&gt;</code></li>
+<li><strong>关键点</strong>：Vue的模板语法更接近HTML，理解起来更直观</li>
+</ul>
+<h3 id="2-从受控组件到双向绑定"><a href="#2-从受控组件到双向绑定" class="headerlink" title="2. 从受控组件到双向绑定"></a>2. 从受控组件到双向绑定</h3><ul>
+<li><strong>React表单</strong>：<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Form</span>(<span class="hljs-params"></span>) &#123;<br>  <span class="hljs-keyword">const</span> [name, setName] = <span class="hljs-title function_">useState</span>(<span class="hljs-string">&#x27;&#x27;</span>);<br>  <br>  <span class="hljs-keyword">return</span> (<br>    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> </span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">value</span>=<span class="hljs-string">&#123;name&#125;</span></span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">onChange</span>=<span class="hljs-string">&#123;(e)</span> =&gt;</span> setName(e.target.value)&#125;</span><br><span class="language-xml">    /&gt;</span><br>  );<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><strong>Vue表单</strong>：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;template&gt;<br>  &lt;input v-model=&quot;name&quot; /&gt;<br>&lt;/template&gt;<br><br>&lt;script&gt;<br>export default &#123;<br>  data() &#123;<br>    return &#123;<br>      name: &#x27;&#x27;<br>    &#125;<br>  &#125;<br>&#125;<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure></li>
+<li><strong>关键点</strong>：Vue的<code>v-model</code>简化了表单处理，但需要理解它是<code>v-bind:value</code>和<code>v-on:input</code>的语法糖</li>
+</ul>
+<h3 id="3-从类组件到Options-API"><a href="#3-从类组件到Options-API" class="headerlink" title="3. 从类组件到Options API"></a>3. 从类组件到Options API</h3><ul>
+<li><strong>React类组件</strong>：<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Counter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">React.Component</span> &#123;<br>  state = &#123; <span class="hljs-attr">count</span>: <span class="hljs-number">0</span> &#125;;<br>  <br>  increment = <span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setState</span>(&#123; <span class="hljs-attr">count</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">state</span>.<span class="hljs-property">count</span> + <span class="hljs-number">1</span> &#125;);<br>  &#125;;<br>  <br>  <span class="hljs-title function_">render</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">return</span> <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">&#123;this.increment&#125;</span>&gt;</span>&#123;this.state.count&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><strong>Vue选项式API</strong>：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;template&gt;<br>  &lt;button @click=&quot;increment&quot;&gt;&#123;&#123; count &#125;&#125;&lt;/button&gt;<br>&lt;/template&gt;<br><br>&lt;script&gt;<br>export default &#123;<br>  data() &#123;<br>    return &#123;<br>      count: 0<br>    &#125;<br>  &#125;,<br>  methods: &#123;<br>    increment() &#123;<br>      this.count++;<br>    &#125;<br>  &#125;<br>&#125;<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure></li>
+<li><strong>关键点</strong>：Vue的选项式API与React的类组件在结构上相似，但Vue的模板语法使代码更清晰</li>
+</ul>
+<h3 id="4-从Hooks到Composition-API"><a href="#4-从Hooks到Composition-API" class="headerlink" title="4. 从Hooks到Composition API"></a>4. 从Hooks到Composition API</h3><ul>
+<li><strong>React Hooks</strong>：<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Counter</span>(<span class="hljs-params"></span>) &#123;<br>  <span class="hljs-keyword">const</span> [count, setCount] = <span class="hljs-title function_">useState</span>(<span class="hljs-number">0</span>);<br>  <br>  <span class="hljs-title function_">useEffect</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-variable language_">document</span>.<span class="hljs-property">title</span> = <span class="hljs-string">`You clicked <span class="hljs-subst">$&#123;count&#125;</span> times`</span>;<br>  &#125;, [count]);<br>  <br>  <span class="hljs-keyword">return</span> (<br>    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">&#123;()</span> =&gt;</span> setCount(count + 1)&#125;&gt;</span><br><span class="language-xml">      &#123;count&#125;</span><br><span class="language-xml">    <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span><br>  );<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><strong>Vue Composition API</strong>：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;script setup&gt;<br>import &#123; ref, onMounted &#125; from &#x27;vue&#x27;;<br><br>const count = ref(0);<br><br>onMounted(() =&gt; &#123;<br>  document.title = `You clicked $&#123;count.value&#125; times`;<br>&#125;);<br><br>function increment() &#123;<br>  count.value++;<br>&#125;<br>&lt;/script&gt;<br><br>&lt;template&gt;<br>  &lt;button @click=&quot;increment&quot;&gt;&#123;&#123; count &#125;&#125;&lt;/button&gt;<br>&lt;/template&gt;<br></code></pre></td></tr></table></figure></li>
+<li><strong>关键点</strong>：Vue的Composition API与React Hooks理念相似，但语法更接近传统JavaScript</li>
+</ul>
+<h2 id="五、总结：选择框架的关键考虑因素"><a href="#五、总结：选择框架的关键考虑因素" class="headerlink" title="五、总结：选择框架的关键考虑因素"></a>五、总结：选择框架的关键考虑因素</h2><table>
+<thead>
+<tr>
+<th>考虑因素</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>项目规模</td>
+<td>大型复杂应用</td>
+<td>中小型项目</td>
+</tr>
+<tr>
+<td>团队熟悉度</td>
+<td>团队熟悉React</td>
+<td>团队熟悉Vue</td>
+</tr>
+<tr>
+<td>开发速度</td>
+<td>速度中等（需要学习更多概念）</td>
+<td>速度较快（更简单的语法）</td>
+</tr>
+<tr>
+<td>灵活性</td>
+<td>高（可自由选择工具）</td>
+<td>中（官方工具集成度高）</td>
+</tr>
+<tr>
+<td>企业应用</td>
+<td>广泛应用于大公司（Facebook、Instagram等）</td>
+<td>广泛应用于中小型项目</td>
+</tr>
+</tbody></table>
+<h2 id="个人建议"><a href="#个人建议" class="headerlink" title="个人建议"></a>个人建议</h2><p>作为从React转到Vue的开发者，你会发现Vue的模板语法和双向绑定特别适合快速开发表单和简单界面。但不要忽视Vue的Composition API，它与React Hooks理念高度一致，能让你在Vue中体验到与React相似的开发方式。</p>
+<p><strong>关键提醒</strong>：Vue的”渐进式”特性意味着你可以从简单开始，逐步引入更高级的功能，这与React的”从简单到复杂”的路径非常相似。</p>
+<p>无论选择哪个框架，核心的前端思想是相通的：组件化、数据驱动视图、状态管理。掌握好这些核心思想，无论是React还是Vue，都能轻松上手。</p>
+<p>希望这份详细的对比能帮助你更好地理解React和Vue的异同，以及如何从React顺利过渡到Vue！如果你在学习过程中有任何疑问，欢迎随时交流。😊</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/React-Vue/" class="category-chain-item">React_Vue</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/React/">#React</a>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/Vue/">#Vue</a>
+      
+        <a href="/tags/React-Vue/">#React_Vue</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>React与Vue的异同点及从React转Vue的相通之处</div>
+      <div>https://zjw93615.github.io/2025/12/06/React_Vue/React与Vue的异同点/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/%E9%A6%96%E9%A1%B5%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96/" title="前端首页渲染优化：核心注意点与优化方向">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">前端首页渲染优化：核心注意点与优化方向</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E9%9D%A2%E8%AF%95/%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E6%B1%87%E6%80%BB/" title="前端工程化">
+                        <span class="hidden-mobile">前端工程化</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

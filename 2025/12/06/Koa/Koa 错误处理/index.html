@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Koa 错误处理实现：全局兜底 + 精细化区分以下是完整的 Koa 错误处理方案，涵盖自定义错误类型、全局错误中间件、结构化日志、异步错误兜底，所有代码可直接运行，且严格遵循「业务错误暴露详情、系统错误隐藏详情」的核心要求。 一、环境准备先安装依赖： 12npm install koa koa-router koa-body winston http-errors# 可选（日志按天分割）：npm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="可选（日志按天分割）：npm install winston-daily-rotate-file">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/Koa/Koa%20%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="Koa 错误处理实现：全局兜底 + 精细化区分以下是完整的 Koa 错误处理方案，涵盖自定义错误类型、全局错误中间件、结构化日志、异步错误兜底，所有代码可直接运行，且严格遵循「业务错误暴露详情、系统错误隐藏详情」的核心要求。 一、环境准备先安装依赖： 12npm install koa koa-router koa-body winston http-errors# 可选（日志按天分割）：npm">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:38:57.202Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="Koa">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>可选（日志按天分割）：npm install winston-daily-rotate-file - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="可选（日志按天分割）：npm install winston-daily-rotate-file"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          56 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">可选（日志按天分割）：npm install winston-daily-rotate-file</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="Koa-错误处理实现：全局兜底-精细化区分"><a href="#Koa-错误处理实现：全局兜底-精细化区分" class="headerlink" title="Koa 错误处理实现：全局兜底 + 精细化区分"></a>Koa 错误处理实现：全局兜底 + 精细化区分</h3><p>以下是完整的 Koa 错误处理方案，涵盖<strong>自定义错误类型、全局错误中间件、结构化日志、异步错误兜底</strong>，所有代码可直接运行，且严格遵循「业务错误暴露详情、系统错误隐藏详情」的核心要求。</p>
+<h3 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h3><p>先安装依赖：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">npm install koa koa-router koa-body winston http-errors<br><span class="hljs-comment"># 可选（日志按天分割）：npm install winston-daily-rotate-file</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="二、目录结构"><a href="#二、目录结构" class="headerlink" title="二、目录结构"></a>二、目录结构</h3><figure class="highlight axapta"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs axapta">src/<br>├── errors/           <span class="hljs-meta"># 自定义错误类</span><br>│   └── customError.js<br>├── logger/           <span class="hljs-meta"># 结构化日志配置</span><br>│   └── <span class="hljs-keyword">index</span>.js<br>├── middleware/       <span class="hljs-meta"># 全局错误中间件</span><br>│   └── errorHandler.js<br>├── routes/           <span class="hljs-meta"># 示例路由（模拟错误场景）</span><br>│   └── demo.js<br>└── app.js            <span class="hljs-meta"># 入口文件</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="三、核心代码实现"><a href="#三、核心代码实现" class="headerlink" title="三、核心代码实现"></a>三、核心代码实现</h3><h4 id="1-自定义错误类（区分业务-x2F-系统错误）"><a href="#1-自定义错误类（区分业务-x2F-系统错误）" class="headerlink" title="1. 自定义错误类（区分业务&#x2F;系统错误）"></a>1. 自定义错误类（区分业务&#x2F;系统错误）</h4><p><code>src/errors/customError.js</code>：定义标准化的错误基类，明确区分「业务错误」和「系统错误」，便于后续精细化处理。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 自定义错误基类</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">number</span>&#125; code 错误码（如400/403/500）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">string</span>&#125; message 错误描述</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomError</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Error</span> &#123;<br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">code, message</span>) &#123;<br>    <span class="hljs-variable language_">super</span>(message);<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">code</span> = code; <span class="hljs-comment">// 错误码（HTTP状态码/业务码）</span><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">name</span> = <span class="hljs-variable language_">this</span>.<span class="hljs-property">constructor</span>.<span class="hljs-property">name</span>; <span class="hljs-comment">// 错误类型名称（便于日志区分）</span><br>    <span class="hljs-title class_">Error</span>.<span class="hljs-title function_">captureStackTrace</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-variable language_">this</span>.<span class="hljs-property">constructor</span>); <span class="hljs-comment">// 捕获堆栈信息（溯源用）</span><br>  &#125;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 业务错误：参数错误、权限不足等，对外暴露具体信息</span><br><span class="hljs-comment"> * 示例：new BusinessError(400, &quot;用户ID必须为数字&quot;)</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">BusinessError</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">CustomError</span> &#123;<br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">code, message</span>) &#123;<br>    <span class="hljs-variable language_">super</span>(code, message);<br>  &#125;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 系统错误：数据库异常、服务熔断等，对外隐藏具体信息</span><br><span class="hljs-comment"> * 示例：new SystemError(500, &quot;数据库连接超时&quot;)</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SystemError</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">CustomError</span> &#123;<br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">code = <span class="hljs-number">500</span>, message</span>) &#123;<br>    <span class="hljs-variable language_">super</span>(code, message);<br>  &#125;<br>&#125;<br><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = &#123; <span class="hljs-title class_">CustomError</span>, <span class="hljs-title class_">BusinessError</span>, <span class="hljs-title class_">SystemError</span> &#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-结构化日志配置（winston）"><a href="#2-结构化日志配置（winston）" class="headerlink" title="2. 结构化日志配置（winston）"></a>2. 结构化日志配置（winston）</h4><p><code>src/logger/index.js</code>：记录错误的完整上下文（请求参数、IP、堆栈、时间），输出到文件&#x2F;控制台，便于问题溯源。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> winston = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;winston&#x27;</span>);<br><span class="hljs-comment">// 可选：日志按天分割（需安装winston-daily-rotate-file）</span><br><span class="hljs-comment">// const DailyRotateFile = require(&#x27;winston-daily-rotate-file&#x27;);</span><br><br><span class="hljs-keyword">const</span> &#123; combine, timestamp, printf, json &#125; = winston.<span class="hljs-property">format</span>;<br><br><span class="hljs-comment">// 自定义日志格式：结构化输出，包含所有上下文信息</span><br><span class="hljs-keyword">const</span> logFormat = <span class="hljs-title function_">printf</span>(<span class="hljs-function">(<span class="hljs-params">&#123; level, message, timestamp, ...meta &#125;</span>) =&gt;</span> &#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(&#123;<br>    <span class="hljs-attr">time</span>: timestamp,       <span class="hljs-comment">// 错误发生时间</span><br>    <span class="hljs-attr">level</span>: level,          <span class="hljs-comment">// 日志级别（error/warn/info）</span><br>    <span class="hljs-attr">message</span>: message,      <span class="hljs-comment">// 错误核心描述</span><br>    ...meta                <span class="hljs-comment">// 扩展字段：请求参数、IP、堆栈等</span><br>  &#125;);<br>&#125;);<br><br><span class="hljs-comment">// 创建logger实例</span><br><span class="hljs-keyword">const</span> logger = winston.<span class="hljs-title function_">createLogger</span>(&#123;<br>  <span class="hljs-attr">level</span>: <span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-comment">// 仅记录错误级别日志</span><br>  <span class="hljs-attr">format</span>: <span class="hljs-title function_">combine</span>(<br>    <span class="hljs-title function_">timestamp</span>(&#123; <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;YYYY-MM-DD HH:mm:ss&#x27;</span> &#125;), <span class="hljs-comment">// 时间格式</span><br>    <span class="hljs-title function_">json</span>(), <span class="hljs-comment">// 结构化JSON输出</span><br>    logFormat<br>  ),<br>  <span class="hljs-attr">transports</span>: [<br>    <span class="hljs-comment">// 输出到错误日志文件</span><br>    <span class="hljs-keyword">new</span> winston.<span class="hljs-property">transports</span>.<span class="hljs-title class_">File</span>(&#123; <br>      <span class="hljs-attr">filename</span>: <span class="hljs-string">&#x27;logs/error.log&#x27;</span>, <br>      <span class="hljs-attr">level</span>: <span class="hljs-string">&#x27;error&#x27;</span> <br>    &#125;),<br>    <span class="hljs-comment">// 开发环境：控制台彩色输出（便于调试）</span><br>    <span class="hljs-keyword">new</span> winston.<span class="hljs-property">transports</span>.<span class="hljs-title class_">Console</span>(&#123;<br>      <span class="hljs-attr">format</span>: winston.<span class="hljs-property">format</span>.<span class="hljs-title function_">combine</span>(<br>        winston.<span class="hljs-property">format</span>.<span class="hljs-title function_">colorize</span>(), <span class="hljs-comment">// 彩色字体</span><br>        logFormat<br>      )<br>    &#125;)<br>    <span class="hljs-comment">// 可选：日志按天分割（替代上面的File transport）</span><br>    <span class="hljs-comment">// new DailyRotateFile(&#123;</span><br>    <span class="hljs-comment">//   filename: &#x27;logs/error-%DATE%.log&#x27;,</span><br>    <span class="hljs-comment">//   datePattern: &#x27;YYYY-MM-DD&#x27;,</span><br>    <span class="hljs-comment">//   level: &#x27;error&#x27;</span><br>    <span class="hljs-comment">// &#125;)</span><br>  ]<br>&#125;);<br><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = logger;<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-全局错误中间件（核心）"><a href="#3-全局错误中间件（核心）" class="headerlink" title="3. 全局错误中间件（核心）"></a>3. 全局错误中间件（核心）</h4><p><code>src/middleware/errorHandler.js</code>：捕获所有同步&#x2F;异步错误，统一返回格式，区分业务&#x2F;系统错误处理逻辑。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../logger&#x27;</span>);<br><span class="hljs-keyword">const</span> &#123; <span class="hljs-title class_">BusinessError</span>, <span class="hljs-title class_">SystemError</span> &#125; = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../errors/customError&#x27;</span>);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * Koa全局错误处理中间件</span><br><span class="hljs-comment"> * 作用：1. 捕获所有同步/异步错误 2. 统一响应格式 3. 区分业务/系统错误 4. 记录错误日志</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">errorHandler</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">ctx, next</span>) =&gt; &#123;<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>(); <span class="hljs-comment">// 执行后续中间件/路由（洋葱模型：包裹所有业务逻辑）</span><br>  &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>    <span class="hljs-comment">// 1. 构建错误日志的完整上下文（便于溯源）</span><br>    <span class="hljs-keyword">const</span> errorContext = &#123;<br>      <span class="hljs-attr">request</span>: &#123;<br>        <span class="hljs-attr">method</span>: ctx.<span class="hljs-property">method</span>,    <span class="hljs-comment">// 请求方法（GET/POST）</span><br>        <span class="hljs-attr">url</span>: ctx.<span class="hljs-property">url</span>,          <span class="hljs-comment">// 请求URL</span><br>        <span class="hljs-attr">params</span>: ctx.<span class="hljs-property">params</span>,    <span class="hljs-comment">// 路由参数</span><br>        <span class="hljs-attr">query</span>: ctx.<span class="hljs-property">query</span>,      <span class="hljs-comment">// URL查询参数</span><br>        <span class="hljs-attr">body</span>: ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>,<span class="hljs-comment">// 请求体</span><br>        <span class="hljs-attr">ip</span>: ctx.<span class="hljs-property">ip</span>             <span class="hljs-comment">// 请求IP</span><br>      &#125;,<br>      <span class="hljs-attr">stack</span>: err.<span class="hljs-property">stack</span>,        <span class="hljs-comment">// 错误堆栈（关键：定位代码行）</span><br>      <span class="hljs-attr">errorName</span>: err.<span class="hljs-property">name</span>,     <span class="hljs-comment">// 错误类型名称</span><br>      <span class="hljs-attr">errorMessage</span>: err.<span class="hljs-property">message</span><span class="hljs-comment">// 错误原始描述</span><br>    &#125;;<br><br>    <span class="hljs-comment">// 2. 记录结构化错误日志</span><br>    logger.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Request Error&#x27;</span>, errorContext);<br><br>    <span class="hljs-comment">// 3. 统一响应格式（禁止暴露系统错误详情）</span><br>    <span class="hljs-keyword">const</span> response = &#123;<br>      <span class="hljs-attr">code</span>: <span class="hljs-number">500</span>,<br>      <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;服务暂不可用&#x27;</span>, <span class="hljs-comment">// 系统错误默认提示</span><br>      <span class="hljs-attr">data</span>: <span class="hljs-literal">null</span><br>    &#125;;<br><br>    <span class="hljs-comment">// 4. 精细化区分错误类型</span><br>    <span class="hljs-keyword">if</span> (err <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">BusinessError</span>) &#123;<br>      <span class="hljs-comment">// 业务错误：返回具体错误码和描述（对外暴露）</span><br>      response.<span class="hljs-property">code</span> = err.<span class="hljs-property">code</span>;<br>      response.<span class="hljs-property">msg</span> = err.<span class="hljs-property">message</span>;<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (err <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">SystemError</span>) &#123;<br>      <span class="hljs-comment">// 系统错误：仅返回错误码，隐藏具体描述（msg保持默认）</span><br>      response.<span class="hljs-property">code</span> = err.<span class="hljs-property">code</span>;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>      <span class="hljs-comment">// 未知错误（原生Error）：按系统错误处理，日志记录原始信息</span><br>      logger.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Unknown Error&#x27;</span>, &#123; ...errorContext, <span class="hljs-attr">rawError</span>: err &#125;);<br>    &#125;<br><br>    <span class="hljs-comment">// 5. 设置响应状态码 + 返回统一格式</span><br>    ctx.<span class="hljs-property">status</span> = err.<span class="hljs-property">code</span> || <span class="hljs-number">500</span>;<br>    ctx.<span class="hljs-property">body</span> = response;<br>  &#125;<br>&#125;;<br><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = errorHandler;<br></code></pre></td></tr></table></figure>
+
+<h4 id="4-示例路由（模拟错误场景）"><a href="#4-示例路由（模拟错误场景）" class="headerlink" title="4. 示例路由（模拟错误场景）"></a>4. 示例路由（模拟错误场景）</h4><p><code>src/routes/demo.js</code>：模拟不同错误场景（参数错误、权限不足、数据库异常），验证错误处理逻辑。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Router</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-router&#x27;</span>);<br><span class="hljs-keyword">const</span> router = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Router</span>();<br><span class="hljs-keyword">const</span> &#123; <span class="hljs-title class_">BusinessError</span>, <span class="hljs-title class_">SystemError</span> &#125; = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;../errors/customError&#x27;</span>);<br><br><span class="hljs-comment">// 场景1：参数错误（业务错误）</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/user/:id&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; id &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">if</span> (!<span class="hljs-regexp">/^\d+$/</span>.<span class="hljs-title function_">test</span>(id)) &#123;<br>    <span class="hljs-comment">// 抛出业务错误：对外暴露具体原因</span><br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BusinessError</span>(<span class="hljs-number">400</span>, <span class="hljs-string">&#x27;用户ID必须为数字&#x27;</span>);<br>  &#125;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;success&#x27;</span>, <span class="hljs-attr">data</span>: &#123; id &#125; &#125;;<br>&#125;);<br><br><span class="hljs-comment">// 场景2：权限不足（业务错误）</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/admin/delete&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; role &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-keyword">if</span> (role !== <span class="hljs-string">&#x27;admin&#x27;</span>) &#123;<br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BusinessError</span>(<span class="hljs-number">403</span>, <span class="hljs-string">&#x27;权限不足，仅管理员可操作&#x27;</span>);<br>  &#125;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;删除成功&#x27;</span>, <span class="hljs-attr">data</span>: <span class="hljs-literal">null</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">// 场景3：数据库异常（系统错误）</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/data/list&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-comment">// 模拟数据库查询失败</span><br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;数据库连接超时（原生错误）&#x27;</span>);<br>  &#125; <span class="hljs-keyword">catch</span> (dbErr) &#123;<br>    <span class="hljs-comment">// 包装为系统错误：对外隐藏具体原因，日志记录详情</span><br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SystemError</span>(<span class="hljs-number">500</span>, dbErr.<span class="hljs-property">message</span>);<br>  &#125;<br>&#125;);<br><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = router;<br></code></pre></td></tr></table></figure>
+
+<h4 id="5-入口文件（整合所有模块-异步错误兜底）"><a href="#5-入口文件（整合所有模块-异步错误兜底）" class="headerlink" title="5. 入口文件（整合所有模块 + 异步错误兜底）"></a>5. 入口文件（整合所有模块 + 异步错误兜底）</h4><p><code>src/app.js</code>：注册中间件&#x2F;路由，配置 Koa 内置的 <code>error</code> 事件兜底（防止未捕获的异步错误导致进程崩溃）。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><span class="hljs-keyword">const</span> koaBody = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-body&#x27;</span>); <span class="hljs-comment">// 解析请求体（POST接口需要）</span><br><span class="hljs-keyword">const</span> router = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./routes/demo&#x27;</span>);<br><span class="hljs-keyword">const</span> errorHandler = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./middleware/errorHandler&#x27;</span>);<br><span class="hljs-keyword">const</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./logger&#x27;</span>);<br><br><span class="hljs-comment">// 1. 解析请求体（JSON/表单）</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">koaBody</span>());<br><br><span class="hljs-comment">// 2. 全局错误处理中间件（必须放在所有路由之前！）</span><br>app.<span class="hljs-title function_">use</span>(errorHandler);<br><br><span class="hljs-comment">// 3. 注册业务路由</span><br>app.<span class="hljs-title function_">use</span>(router.<span class="hljs-title function_">routes</span>()).<span class="hljs-title function_">use</span>(router.<span class="hljs-title function_">allowedMethods</span>());<br><br><span class="hljs-comment">// 4. Koa内置error事件：兜底捕获未被中间件捕获的错误（终极兜底）</span><br>app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">err, ctx</span>) =&gt;</span> &#123;<br>  <span class="hljs-keyword">const</span> errorContext = &#123;<br>    <span class="hljs-attr">request</span>: ctx ? &#123;<br>      <span class="hljs-attr">method</span>: ctx.<span class="hljs-property">method</span>,<br>      <span class="hljs-attr">url</span>: ctx.<span class="hljs-property">url</span>,<br>      <span class="hljs-attr">ip</span>: ctx.<span class="hljs-property">ip</span><br>    &#125; : <span class="hljs-string">&#x27;无请求上下文&#x27;</span>, <span class="hljs-comment">// 无ctx时（如启动阶段错误）</span><br>    <span class="hljs-attr">stack</span>: err.<span class="hljs-property">stack</span>,<br>    <span class="hljs-attr">errorMessage</span>: err.<span class="hljs-property">message</span><br>  &#125;;<br>  <span class="hljs-comment">// 记录兜底错误日志</span><br>  logger.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Uncaught Koa Error (终极兜底)&#x27;</span>, errorContext);<br>&#125;);<br><br><span class="hljs-comment">// 启动服务</span><br><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">PORT</span> = <span class="hljs-number">3000</span>;<br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-variable constant_">PORT</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Server running on http://localhost:<span class="hljs-subst">$&#123;PORT&#125;</span>`</span>);<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h3 id="四、测试验证"><a href="#四、测试验证" class="headerlink" title="四、测试验证"></a>四、测试验证</h3><p>启动服务：<code>node src/app.js</code>，访问以下接口验证效果：</p>
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th>响应结果（客户端）</th>
+<th>日志记录（服务端）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET &#x2F;user&#x2F;abc</td>
+<td>{code:400,msg:”用户ID必须为数字”,data:null}</td>
+<td>包含请求参数、IP、堆栈、错误描述</td>
+</tr>
+<tr>
+<td>POST &#x2F;admin&#x2F;delete（body {role:”user”}）</td>
+<td>{code:403,msg:”权限不足，仅管理员可操作”,data:null}</td>
+<td>完整上下文 + 业务错误详情</td>
+</tr>
+<tr>
+<td>GET &#x2F;data&#x2F;list</td>
+<td>{code:500,msg:”服务暂不可用”,data:null}</td>
+<td>包含“数据库连接超时”原始错误 + 堆栈</td>
+</tr>
+</tbody></table>
+<h3 id="五、关键注意事项"><a href="#五、关键注意事项" class="headerlink" title="五、关键注意事项"></a>五、关键注意事项</h3><ol>
+<li><strong>中间件顺序</strong>：错误中间件必须放在所有路由&#x2F;业务中间件之前（洋葱模型特性，确保包裹所有逻辑）；</li>
+<li><strong>异步错误捕获</strong>：Koa 中 <code>async/await</code> 的错误会被 <code>try/catch</code> 捕获，<code>app.on(&#39;error&#39;)</code> 处理「未被中间件捕获的错误」（如中间件外的异步操作）；</li>
+<li><strong>日志溯源</strong>：堆栈信息（<code>err.stack</code>）是定位问题的核心，必须记录；</li>
+<li><strong>生产环境优化</strong>：日志可输出到 ELK 平台（Logstash 收集 + Kibana 可视化），而非仅本地文件。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Koa/" class="category-chain-item">Koa</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/Koa/">#Koa</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>可选（日志按天分割）：npm install winston-daily-rotate-file</div>
+      <div>https://zjw93615.github.io/2025/12/06/Koa/Koa 错误处理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/Koa/Koa%20%E8%B5%84%E6%B7%B1%E5%B7%A5%E7%A8%8B%E5%B8%88%E9%9D%A2%E8%AF%95%E9%A2%982/" title="Koa 资深工程师面试题：高频追问+企业级回答技巧">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Koa 资深工程师面试题：高频追问+企业级回答技巧</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/Koa/koa%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%92%8C%E6%89%8B%E5%8A%A8%E5%AE%9E%E7%8E%B0%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%9E%E6%88%98/" title="koa常用中间件和手动实现中间件实战">
+                        <span class="hidden-mobile">koa常用中间件和手动实现中间件实战</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

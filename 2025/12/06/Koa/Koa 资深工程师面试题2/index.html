@@ -1,0 +1,857 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Koa 资深工程师面试题：高频追问+企业级回答技巧核心原则：回答&#x3D;「理论逻辑」+「落地案例」+「量化结果」+「复盘优化」资深工程师面试的核心是考察「解决复杂问题的能力」和「企业级项目经验」，避免纯理论阐述，需通过「具体场景+技术选型+踩坑经验+数据指标」突出竞争力。 一、按原题分类的高频追问+针对性回答思路（一）核心原理类（题目1-2）原题1：Koa洋葱模型原理+async&#x2F;a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Koa 资深工程师面试题：高频追问+企业级回答技巧">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/Koa/Koa%20%E8%B5%84%E6%B7%B1%E5%B7%A5%E7%A8%8B%E5%B8%88%E9%9D%A2%E8%AF%95%E9%A2%982/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="Koa 资深工程师面试题：高频追问+企业级回答技巧核心原则：回答&#x3D;「理论逻辑」+「落地案例」+「量化结果」+「复盘优化」资深工程师面试的核心是考察「解决复杂问题的能力」和「企业级项目经验」，避免纯理论阐述，需通过「具体场景+技术选型+踩坑经验+数据指标」突出竞争力。 一、按原题分类的高频追问+针对性回答思路（一）核心原理类（题目1-2）原题1：Koa洋葱模型原理+async&#x2F;a">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:18:21.947Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="TypeScript">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="缓存">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="Koa">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="XSS">
+<meta property="article:tag" content="CSRF">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Koa 资深工程师面试题：高频追问+企业级回答技巧 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Koa 资深工程师面试题：高频追问+企业级回答技巧"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          100 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Koa 资深工程师面试题：高频追问+企业级回答技巧</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Koa-资深工程师面试题：高频追问-企业级回答技巧"><a href="#Koa-资深工程师面试题：高频追问-企业级回答技巧" class="headerlink" title="Koa 资深工程师面试题：高频追问+企业级回答技巧"></a>Koa 资深工程师面试题：高频追问+企业级回答技巧</h1><h2 id="核心原则：回答-x3D-「理论逻辑」-「落地案例」-「量化结果」-「复盘优化」"><a href="#核心原则：回答-x3D-「理论逻辑」-「落地案例」-「量化结果」-「复盘优化」" class="headerlink" title="核心原则：回答&#x3D;「理论逻辑」+「落地案例」+「量化结果」+「复盘优化」"></a>核心原则：回答&#x3D;「理论逻辑」+「落地案例」+「量化结果」+「复盘优化」</h2><p>资深工程师面试的核心是考察「解决复杂问题的能力」和「企业级项目经验」，避免纯理论阐述，需通过「具体场景+技术选型+踩坑经验+数据指标」突出竞争力。</p>
+<h2 id="一、按原题分类的高频追问-针对性回答思路"><a href="#一、按原题分类的高频追问-针对性回答思路" class="headerlink" title="一、按原题分类的高频追问+针对性回答思路"></a>一、按原题分类的高频追问+针对性回答思路</h2><h3 id="（一）核心原理类（题目1-2）"><a href="#（一）核心原理类（题目1-2）" class="headerlink" title="（一）核心原理类（题目1-2）"></a>（一）核心原理类（题目1-2）</h3><h4 id="原题1：Koa洋葱模型原理-async-x2F-await影响"><a href="#原题1：Koa洋葱模型原理-async-x2F-await影响" class="headerlink" title="原题1：Koa洋葱模型原理+async&#x2F;await影响"></a>原题1：Koa洋葱模型原理+async&#x2F;await影响</h4><p><strong>高频追问1</strong>：如何手动实现一个简化版的 Koa compose 函数？<br><strong>回答思路（突出底层实现能力）</strong>：<br>先讲核心逻辑（递归+Promise链式调用），再写极简实现，最后关联企业级场景（如中间件优先级控制）。  </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 简化版compose（企业级需加边界判断：next多次调用、中间件非函数校验）</span><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">myCompose</span>(<span class="hljs-params">middlewares</span>) &#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">ctx, next</span>) =&gt;</span> &#123;<br>    <span class="hljs-keyword">let</span> index = -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">const</span> <span class="hljs-title function_">dispatch</span> = (<span class="hljs-params">i</span>) =&gt; &#123;<br>      <span class="hljs-keyword">if</span> (i &lt;= index) <span class="hljs-keyword">return</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">reject</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;next() 不可重复调用&#x27;</span>));<br>      index = i;<br>      <span class="hljs-keyword">const</span> fn = middlewares[i] || next;<br>      <span class="hljs-keyword">if</span> (!fn) <span class="hljs-keyword">return</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">resolve</span>();<br>      <span class="hljs-comment">// 关键：将下一个中间件dispatch(i+1)作为next传入当前中间件</span><br>      <span class="hljs-keyword">return</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">resolve</span>(<span class="hljs-title function_">fn</span>(ctx, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">dispatch</span>(i+<span class="hljs-number">1</span>)));<br>    &#125;;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title function_">dispatch</span>(<span class="hljs-number">0</span>);<br>  &#125;;<br>&#125;<br><span class="hljs-comment">// 企业级补充：实际项目中会增加中间件类型校验（如必须是async函数）、错误捕获增强</span><br></code></pre></td></tr></table></figure>
+<p><strong>案例延伸</strong>：“在我们游戏活动后端项目中，曾遇到中间件执行顺序错乱问题，排查后发现是某第三方中间件未返回Promise，后续在compose中增加了fn类型校验（<code>typeof fn === &#39;function&#39;</code>）和非Promise包装（<code>Promise.resolve(fn(...))</code>），解决了线上偶发的请求阻塞问题。”</p>
+<p><strong>高频追问2</strong>：Koa 中 async 中间件报错后，洋葱模型的执行流程是什么？<br><strong>回答思路（突出流程拆解）</strong>：  </p>
+<ol>
+<li>异步中间件报错（如<code>await db.query()</code>抛错）→ 触发当前中间件的<code>catch</code>块；  </li>
+<li>若当前中间件未捕获，错误会沿Promise链向上冒泡，直到全局错误中间件；  </li>
+<li>冒泡过程中，<strong>未执行完的<code>next()</code>后续逻辑不会执行</strong>（如中间件A→next()→中间件B报错，中间件A的next()后逻辑不会执行）；  </li>
+<li>最终通过<code>app.on(&#39;error&#39;)</code>兜底，避免进程崩溃。<br><strong>企业级案例</strong>：“线上曾出现某支付接口报错后，日志中间件未记录请求参数，原因是日志中间件的<code>next()</code>后逻辑未执行，后续优化了错误中间件的位置（放在第一个），确保所有请求无论成败都能被日志捕获。”</li>
+</ol>
+<h4 id="原题2：Koa1-vs-Koa2-区别-async-x2F-await选型原因"><a href="#原题2：Koa1-vs-Koa2-区别-async-x2F-await选型原因" class="headerlink" title="原题2：Koa1 vs Koa2 区别+async&#x2F;await选型原因"></a>原题2：Koa1 vs Koa2 区别+async&#x2F;await选型原因</h4><p><strong>高频追问</strong>：Koa2 中如果中间件不写 async&#x2F;await，会有什么问题？如何排查？<br><strong>回答思路（突出问题定位能力）</strong>：  </p>
+<ol>
+<li>问题本质：非async中间件返回普通函数，<code>next()</code>是Promise，未await会导致“穿透逻辑”提前执行（如日志中间件先打印日志，再执行业务）；  </li>
+<li>排查方法：  <ul>
+<li>开发环境：用ESLint规则强制中间件为async函数（<code>rules: &#123; &#39;require-await&#39;: &#39;error&#39; &#125;</code>）；  </li>
+<li>线上环境：通过日志记录中间件执行顺序，若出现“日志在前、业务在后”，则定位为未加await；</li>
+</ul>
+</li>
+<li>企业级解决方案：“我们项目中通过自定义ESLint规则+中间件包装函数（<code>wrapMiddleware(fn) &#123; return async (ctx, next) =&gt; await fn(ctx, next); &#125;</code>），强制所有中间件异步化，杜绝此类问题。”</li>
+</ol>
+<h3 id="（二）中间件设计与实践类（题目3-4）"><a href="#（二）中间件设计与实践类（题目3-4）" class="headerlink" title="（二）中间件设计与实践类（题目3-4）"></a>（二）中间件设计与实践类（题目3-4）</h3><h4 id="原题3：可复用中间件体系-错误处理-x2F-鉴权实践"><a href="#原题3：可复用中间件体系-错误处理-x2F-鉴权实践" class="headerlink" title="原题3：可复用中间件体系+错误处理&#x2F;鉴权实践"></a>原题3：可复用中间件体系+错误处理&#x2F;鉴权实践</h4><p><strong>高频追问1</strong>：如何设计支持“局部禁用”的中间件（如部分接口不需要限流）？<br><strong>回答思路（突出灵活性设计）</strong>：<br>中间件支持配置<code>exclude</code>规则，通过路径&#x2F;方法匹配跳过执行，结合企业级配置中心动态调整。  </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 限流中间件（支持局部禁用）</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">rateLimit</span> = (<span class="hljs-params">options = &#123; exclude: [] &#125;</span>) =&gt; &#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>    <span class="hljs-comment">// 1. 匹配禁用规则（路径+方法）</span><br>    <span class="hljs-keyword">const</span> isExcluded = options.<span class="hljs-property">exclude</span>.<span class="hljs-title function_">some</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> <br>      item.<span class="hljs-property">path</span> === ctx.<span class="hljs-property">path</span> &amp;&amp; item.<span class="hljs-property">method</span> === ctx.<span class="hljs-property">method</span><br>    );<br>    <span class="hljs-keyword">if</span> (isExcluded) <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>    <span class="hljs-comment">// 2. 正常限流逻辑</span><br>    <span class="hljs-keyword">const</span> key = <span class="hljs-string">`ratelimit:<span class="hljs-subst">$&#123;ctx.ip&#125;</span>`</span>;<br>    <span class="hljs-keyword">const</span> count = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">incr</span>(key);<br>    <span class="hljs-keyword">if</span> (count === <span class="hljs-number">1</span>) <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">expire</span>(key, options.<span class="hljs-property">duration</span> / <span class="hljs-number">1000</span>);<br>    <span class="hljs-keyword">if</span> (count &gt; options.<span class="hljs-property">max</span>) &#123;<br>      ctx.<span class="hljs-keyword">throw</span>(<span class="hljs-number">429</span>, <span class="hljs-string">&#x27;请求过于频繁&#x27;</span>);<br>    &#125;<br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>  &#125;;<br>&#125;;<br><span class="hljs-comment">// 使用：登录接口禁用限流（避免验证码验证时被限流）</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">rateLimit</span>(&#123;<br>  <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>,<br>  <span class="hljs-attr">duration</span>: <span class="hljs-number">60000</span>,<br>  <span class="hljs-attr">exclude</span>: [&#123; <span class="hljs-attr">path</span>: <span class="hljs-string">&#x27;/api/login&#x27;</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span> &#125;]<br>&#125;));<br></code></pre></td></tr></table></figure>
+<p><strong>企业级延伸</strong>：“后续我们将禁用规则迁移到Nacos配置中心，支持动态调整（如营销活动期间临时开放某接口的限流），无需重启服务，提升了运维效率。”</p>
+<p><strong>高频追问2</strong>：全局错误中间件如何区分“已知业务错误”和“未知系统错误”？<br><strong>回答思路（突出规范化设计）</strong>：  </p>
+<ol>
+<li>自定义业务错误类（带<code>code</code>和<code>msg</code>），系统错误直接抛出原生Error；  </li>
+<li>错误中间件通过<code>instanceof</code>判断类型，分别处理；  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 企业级业务错误类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">BusinessError</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Error</span> &#123;<br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">code, msg</span>) &#123;<br>    <span class="hljs-variable language_">super</span>(msg);<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">code</span> = code;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">isBusinessError</span> = <span class="hljs-literal">true</span>;<br>  &#125;<br>&#125;<br><span class="hljs-comment">// 错误中间件中判断</span><br><span class="hljs-keyword">if</span> (err.<span class="hljs-property">isBusinessError</span>) &#123;<br>  ctx.<span class="hljs-property">status</span> = <span class="hljs-number">400</span>;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: err.<span class="hljs-property">code</span>, <span class="hljs-attr">msg</span>: err.<span class="hljs-property">msg</span> &#125;;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>  ctx.<span class="hljs-property">status</span> = <span class="hljs-number">500</span>;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">500</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;服务暂不可用&#x27;</span> &#125;;<br>  <span class="hljs-comment">// 记录详细日志（含堆栈、请求参数）</span><br>  logger.<span class="hljs-title function_">error</span>(<span class="hljs-string">`[系统错误] <span class="hljs-subst">$&#123;ctx.method&#125;</span> <span class="hljs-subst">$&#123;ctx.url&#125;</span>`</span>, &#123;<br>    <span class="hljs-attr">stack</span>: err.<span class="hljs-property">stack</span>,<br>    <span class="hljs-attr">params</span>: ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>,<br>    <span class="hljs-attr">requestId</span>: ctx.<span class="hljs-property">requestId</span><br>  &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+<strong>案例</strong>：“在游戏充值接口中，用户余额不足时抛出<code>new BusinessError(4001, &#39;余额不足&#39;)</code>，前端直接提示；而数据库连接超时抛出的原生Error，会被隐藏具体信息，同时触发告警，运维团队5分钟内响应。”</li>
+</ol>
+<h4 id="原题4：中间件内存泄漏场景-检测-x2F-避免"><a href="#原题4：中间件内存泄漏场景-检测-x2F-避免" class="headerlink" title="原题4：中间件内存泄漏场景+检测&#x2F;避免"></a>原题4：中间件内存泄漏场景+检测&#x2F;避免</h4><p><strong>高频追问</strong>：你实际遇到过哪些中间件内存泄漏？如何排查和解决的？<br><strong>回答思路（突出问题解决能力，用STAR法则）</strong>：<br><strong>场景（S）</strong>：游戏活动高峰期（QPS 5万+），服务器内存持续上涨，每2小时需重启一次；<br><strong>任务（T）</strong>：定位内存泄漏源头，解决长期稳定运行问题；<br><strong>行动（A）</strong>：  </p>
+<ol>
+<li>用<code>clinic.js bubbleprof</code>分析：<code>clinic bubbleprof -- node app.js</code>，压测后生成报告；  </li>
+<li>发现<code>eventEmitter.on(&#39;data&#39;)</code>未移除，某文件上传中间件中监听了流事件，请求结束后未解绑；  </li>
+<li>解决：在<code>ctx.res.on(&#39;finish&#39;, () =&gt; &#123; stream.off(&#39;data&#39;, handler); &#125;)</code>中释放事件监听；  </li>
+<li>长效机制：引入<code>node-memwatch</code>监控堆内存变化，超过阈值触发告警。<br><strong>结果（R）</strong>：内存使用率从持续上涨降至稳定（波动±5%），线上服务连续7天无重启，可用性提升至99.99%。</li>
+</ol>
+<h3 id="（三）安全防护进阶类（题目5-6）"><a href="#（三）安全防护进阶类（题目5-6）" class="headerlink" title="（三）安全防护进阶类（题目5-6）"></a>（三）安全防护进阶类（题目5-6）</h3><h4 id="原题5：JWT鉴权-token泄露-x2F-刷新-x2F-黑名单"><a href="#原题5：JWT鉴权-token泄露-x2F-刷新-x2F-黑名单" class="headerlink" title="原题5：JWT鉴权+token泄露&#x2F;刷新&#x2F;黑名单"></a>原题5：JWT鉴权+token泄露&#x2F;刷新&#x2F;黑名单</h4><p><strong>高频追问1</strong>：JWT黑名单用Redis存储，高并发下如何避免查询黑名单的性能瓶颈？<br><strong>回答思路（突出性能优化）</strong>：  </p>
+<ol>
+<li>优化方向：减少Redis查询次数+提升查询效率；  </li>
+<li>具体方案：  <ul>
+<li>布隆过滤器预过滤：将黑名单token存入布隆过滤器（误判率0.01%），查询前先过布隆过滤器，不存在则直接放行（避免99%的无效Redis查询）；  </li>
+<li>Redis批量查询：若需校验多个token，用<code>MGET</code>批量查询，减少网络往返；  </li>
+<li>过期时间对齐：黑名单key的过期时间与JWT过期时间一致，避免Redis存储膨胀；<br><strong>企业级案例</strong>：“我们项目中JWT黑名单日均查询量100万+，引入布隆过滤器后，Redis查询量下降至3万+&#x2F;日，接口响应时间从20ms降至5ms，同时Redis内存占用减少70%。”</li>
+</ul>
+</li>
+</ol>
+<p><strong>高频追问2</strong>：如何防止JWT的refreshToken被盗用？<br><strong>回答思路（突出安全纵深）</strong>：  </p>
+<ol>
+<li>存储安全：refreshToken存入<code>httpOnly + secure + SameSite=Strict</code>的Cookie，防止XSS和CSRF；  </li>
+<li>绑定设备：refreshToken生成时关联设备指纹（<code>ctx.headers[&#39;user-agent&#39;] + IP前两位</code>），验证时校验，不同设备需重新登录；  </li>
+<li>滑动窗口：refreshToken每使用一次，生成新的refreshToken（旧的立即失效），避免长期有效；  </li>
+<li>风险控制：若短期内多次调用refresh接口，触发验证码校验或临时冻结账号；<br><strong>案例延伸</strong>：“曾处理过一起refreshToken被盗用事件，后续增加了设备指纹绑定，被盗用后攻击者因设备不匹配无法刷新token，用户仅需重新登录即可解除风险，未造成财产损失。”</li>
+</ol>
+<h4 id="原题6：SQL注入-x2F-XSS-x2F-CSRF防护-进阶手段"><a href="#原题6：SQL注入-x2F-XSS-x2F-CSRF防护-进阶手段" class="headerlink" title="原题6：SQL注入&#x2F;XSS&#x2F;CSRF防护+进阶手段"></a>原题6：SQL注入&#x2F;XSS&#x2F;CSRF防护+进阶手段</h4><p><strong>高频追问</strong>：如何集成WAF到Koa项目？实际项目中WAF拦截过哪些攻击？<br><strong>回答思路（突出工程化落地）</strong>：  </p>
+<ol>
+<li>集成方案（以阿里云WAF为例）：  <ul>
+<li>云WAF：域名解析指向WAF节点，配置防护规则（SQL注入、XSS、webshell上传）；  </li>
+<li>应用层WAF：使用<code>koa-waf</code>中间件，自定义规则（如拦截含<code>union select</code>的请求）；</li>
+</ul>
+</li>
+<li>拦截案例：  <ul>
+<li>SQL注入攻击：请求<code>/api/user?userId=1&#39; or 1=1--</code>，被WAF识别并拦截；  </li>
+<li>恶意文件上传：上传<code>.php</code>文件（伪装成图片），被WAF检测文件头不一致（文件后缀.jpg但内容是PHP代码）；</li>
+</ul>
+</li>
+<li>企业级补充：“WAF并非万能，我们同时做了‘白名单+最小权限’，数据库账号仅开放SELECT&#x2F;INSERT权限，无DELETE权限，即使WAF被绕过，也无法删除数据。”</li>
+</ol>
+<h3 id="（四）性能优化与高并发类（题目7-8）"><a href="#（四）性能优化与高并发类（题目7-8）" class="headerlink" title="（四）性能优化与高并发类（题目7-8）"></a>（四）性能优化与高并发类（题目7-8）</h3><h4 id="原题7：多进程部署-共享资源问题"><a href="#原题7：多进程部署-共享资源问题" class="headerlink" title="原题7：多进程部署+共享资源问题"></a>原题7：多进程部署+共享资源问题</h4><p><strong>高频追问1</strong>：多进程下如何实现日志的集中收集和按请求ID追踪？<br><strong>回答思路（突出运维落地）</strong>：  </p>
+<ol>
+<li>日志设计：每个请求生成唯一<code>requestId</code>（<code>uuid.v4()</code>），日志中必含<code>requestId</code>；  </li>
+<li>多进程日志同步：  <ul>
+<li>避免每个进程写本地文件（日志分散），用<code>winston-transport-redis</code>将日志输出到Redis，再通过ELK栈收集；  </li>
+<li>进程间通信：用<code>cluster</code>模块的<code>worker.send()</code>传递全局配置（如日志级别）；</li>
+</ul>
+</li>
+<li>追踪链路：通过<code>requestId</code>关联“请求入口→中间件→服务层→数据库”全链路日志；<br><strong>案例</strong>：“游戏活动高峰期，某用户支付失败，通过<code>requestId</code>快速定位到日志：中间件鉴权通过→服务层扣减余额成功→数据库事务提交失败，最终发现是数据库锁等待超时，优化了SQL索引后问题解决，整个排查过程仅用10分钟。”</li>
+</ol>
+<p><strong>高频追问2</strong>：PM2集群模式下，如何实现接口的灰度发布？<br><strong>回答思路（突出高可用部署）</strong>：  </p>
+<ol>
+<li>方案：PM2的<code>--only</code>参数+环境变量区分版本；  </li>
+<li>步骤：  <ul>
+<li>部署新版本：<code>pm2 start ecosystem.config.js --only koa-app-v2</code>（启动1个新版本进程）；  </li>
+<li>流量转发：通过Nginx配置权重（新版本10%流量，旧版本90%）；  </li>
+<li>监控验证：观察新版本的错误率、响应时间，无异常则逐步增加权重（30%→50%→100%）；  </li>
+<li>回滚机制：若出现问题，执行<code>pm2 stop koa-app-v2 &amp;&amp; pm2 restart koa-app-v1</code>，Nginx自动切回旧版本；<br><strong>企业级延伸</strong>：“我们项目中灰度发布时，会同时监控‘业务指标’（如支付成功率）和‘技术指标’（如CPU使用率），曾发现某版本接口响应时间过长，及时回滚，避免影响大面积用户。”</li>
+</ul>
+</li>
+</ol>
+<h4 id="原题8：数据库优化-缓存策略"><a href="#原题8：数据库优化-缓存策略" class="headerlink" title="原题8：数据库优化+缓存策略"></a>原题8：数据库优化+缓存策略</h4><p><strong>高频追问1</strong>：缓存一致性如何保证？（如商品库存更新后，缓存未更新导致数据不一致）<br><strong>回答思路（突出数据可靠性）</strong>：  </p>
+<ol>
+<li>核心原则：“更新数据库+删除缓存”（而非“更新缓存”），避免并发下的一致性问题；  </li>
+<li>企业级方案（双删+重试）：  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 库存更新逻辑（商品下单后扣减库存）</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">updateStock</span>(<span class="hljs-params">goodsId, num</span>) &#123;<br>  <span class="hljs-comment">// 1. 更新数据库</span><br>  <span class="hljs-keyword">await</span> <span class="hljs-title class_">Goods</span>.<span class="hljs-title function_">update</span>(&#123; <span class="hljs-attr">stock</span>: sequelize.<span class="hljs-title function_">literal</span>(<span class="hljs-string">`stock - <span class="hljs-subst">$&#123;num&#125;</span>`</span>) &#125;, &#123; <span class="hljs-attr">where</span>: &#123; <span class="hljs-attr">id</span>: goodsId &#125; &#125;);<br>  <span class="hljs-comment">// 2. 第一次删除缓存</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">del</span>(<span class="hljs-string">`goods:stock:<span class="hljs-subst">$&#123;goodsId&#125;</span>`</span>);<br>  <span class="hljs-comment">// 3. 延迟重试删除（解决并发更新时缓存重建的问题）</span><br>  <span class="hljs-built_in">setTimeout</span>(<span class="hljs-keyword">async</span> () =&gt; &#123;<br>    <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">del</span>(<span class="hljs-string">`goods:stock:<span class="hljs-subst">$&#123;goodsId&#125;</span>`</span>);<br>  &#125;, <span class="hljs-number">500</span>);<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li>兜底方案：缓存设置短期过期时间（如5分钟），即使双删失败，也能通过过期时间自动修复不一致；<br><strong>案例</strong>：“曾遇到高并发下库存缓存不一致问题（A用户下单扣减库存，缓存未删除，B用户看到旧库存），引入延迟双删后，不一致率从0.5%降至0.01%，再结合库存预扣减（下单时锁定库存），彻底解决问题。”</li>
+</ol>
+<p><strong>高频追问2</strong>：如何优化Redis缓存的查询性能？（如日均查询1000万+）<br><strong>回答思路（突出性能极致优化）</strong>：  </p>
+<ol>
+<li>数据结构优化：用<code>Hash</code>存储结构化数据（如<code>goods:info:1001</code> → {name: ‘xxx’, price: 100}），减少key数量；  </li>
+<li>网络优化：使用Redis连接池（<code>ioredis</code>默认支持），设置<code>keepAlive: true</code>复用连接；  </li>
+<li>本地缓存兜底：热点数据（如首页banner）在应用层加LRU缓存（<code>lru-cache</code>），减少Redis查询；  </li>
+<li>集群优化：Redis集群分片（按goodsId哈希分片），避免单节点压力过大；<br><strong>量化结果</strong>：“优化后，Redis单节点QPS从2万提升至5万，接口平均响应时间从30ms降至8ms，支持了双11期间10万QPS的峰值。”</li>
+</ol>
+<h3 id="（五）工程化与架构设计类（题目9-10）"><a href="#（五）工程化与架构设计类（题目9-10）" class="headerlink" title="（五）工程化与架构设计类（题目9-10）"></a>（五）工程化与架构设计类（题目9-10）</h3><h4 id="原题9：Koa-TS企业级架构-分层边界"><a href="#原题9：Koa-TS企业级架构-分层边界" class="headerlink" title="原题9：Koa+TS企业级架构+分层边界"></a>原题9：Koa+TS企业级架构+分层边界</h4><p><strong>高频追问1</strong>：TS类型定义如何避免冗余？如何处理第三方库无类型声明的问题？<br><strong>回答思路（突出工程化规范）</strong>：  </p>
+<ol>
+<li>类型复用：提取公共类型（如<code>BaseResponse&lt;T&gt;</code>）到<code>types/index.ts</code>，避免重复定义；  <figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// 公共响应类型</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">BaseResponse</span>&lt;T = <span class="hljs-built_in">unknown</span>&gt; &#123;<br>  <span class="hljs-attr">code</span>: <span class="hljs-built_in">number</span>;<br>  <span class="hljs-attr">msg</span>: <span class="hljs-built_in">string</span>;<br>  <span class="hljs-attr">data</span>: T;<br>&#125;<br><span class="hljs-comment">// 控制器中复用</span><br><span class="hljs-keyword">async</span> <span class="hljs-title function_">getGoods</span>(<span class="hljs-attr">ctx</span>: <span class="hljs-title class_">Context</span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt; &#123;<br>  <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> goodsService.<span class="hljs-title function_">getDetail</span>();<br>  <span class="hljs-keyword">const</span> <span class="hljs-attr">res</span>: <span class="hljs-title class_">BaseResponse</span>&lt;<span class="hljs-title class_">GoodsDetail</span>&gt; = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;success&#x27;</span>, data &#125;;<br>  ctx.<span class="hljs-property">body</span> = res;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li>第三方库无类型：  <ul>
+<li>安装社区类型声明（<code>@types/xxx</code>）；  </li>
+<li>自定义声明文件（<code>types/xxx.d.ts</code>），如：  <figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// 自定义koa-xxx中间件的类型声明</span><br><span class="hljs-keyword">declare</span> <span class="hljs-variable language_">module</span> <span class="hljs-string">&#x27;koa-xxx&#x27;</span> &#123;<br>  <span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">Middleware</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;koa&#x27;</span>;<br>  <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">koaXxx</span>(<span class="hljs-params">options: &#123; key: <span class="hljs-built_in">string</span> &#125;</span>): <span class="hljs-title class_">Middleware</span>;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>企业级规范：“我们项目中强制使用<code>strict: true</code>，禁止<code>any</code>类型（特殊场景需加<code>// @ts-ignore</code>并注释原因），同时用<code>eslint-plugin-import</code>检查类型导入，避免类型丢失。”</li>
+</ol>
+<p><strong>高频追问2</strong>：如何设计可扩展的服务层？（如新增业务模块时，无需修改原有代码）<br><strong>回答思路（突出架构设计能力）</strong>：  </p>
+<ol>
+<li>核心原则：依赖注入（DI）+ 接口抽象；  </li>
+<li>实现方案：  <ul>
+<li>定义服务接口（如<code>IGoodsService</code>），具体实现（<code>GoodsService</code>）遵循接口；  </li>
+<li>通过容器管理服务实例，控制器依赖接口而非具体实现；  <figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// 接口抽象</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IGoodsService</span> &#123;<br>  <span class="hljs-title function_">getDetail</span>(<span class="hljs-attr">id</span>: <span class="hljs-built_in">number</span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">GoodsDetail</span>&gt;;<br>&#125;<br><span class="hljs-comment">// 具体实现</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsService</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IGoodsService</span> &#123;<br>  <span class="hljs-keyword">async</span> <span class="hljs-title function_">getDetail</span>(<span class="hljs-params">id: <span class="hljs-built_in">number</span></span>) &#123; <span class="hljs-comment">/* 实现 */</span> &#125;<br>&#125;<br><span class="hljs-comment">// 服务容器</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> serviceContainer = &#123;<br>  <span class="hljs-attr">goodsService</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">GoodsService</span>(),<br>&#125;;<br><span class="hljs-comment">// 控制器依赖注入</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsController</span> &#123;<br>  <span class="hljs-keyword">private</span> <span class="hljs-attr">goodsService</span>: <span class="hljs-title class_">IGoodsService</span>;<br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">service: IGoodsService</span>) &#123;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">goodsService</span> = service;<br>  &#125;<br>&#125;<br><span class="hljs-comment">// 实例化控制器</span><br><span class="hljs-keyword">const</span> goodsController = <span class="hljs-keyword">new</span> <span class="hljs-title class_">GoodsController</span>(serviceContainer.<span class="hljs-property">goodsService</span>);<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>扩展场景：新增<code>VipGoodsService</code>（VIP商品逻辑），只需实现<code>IGoodsService</code>，修改容器配置即可，控制器无需改动；<br><strong>案例延伸</strong>：“我们游戏项目中，普通用户和VIP用户的商品权益逻辑不同，通过这种设计，新增VIP模块时仅用1天就完成了开发，且未影响原有普通用户的业务逻辑，代码复用率提升60%。”</li>
+</ol>
+<h4 id="原题10：多环境配置-敏感信息保护"><a href="#原题10：多环境配置-敏感信息保护" class="headerlink" title="原题10：多环境配置+敏感信息保护"></a>原题10：多环境配置+敏感信息保护</h4><p><strong>高频追问</strong>：如何实现配置的动态更新？（如修改限流阈值后，无需重启服务）<br><strong>回答思路（突出运维效率）</strong>：  </p>
+<ol>
+<li>方案：集成配置中心（如Nacos&#x2F;Apollo），监听配置变更事件；  </li>
+<li>实现步骤：  <ul>
+<li>配置中心存储动态配置（如限流阈值、跨域白名单）；  </li>
+<li>Koa应用启动时拉取配置，并存入内存；  </li>
+<li>监听配置变更：配置中心触发变更后，应用自动更新内存中的配置；  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">NacosConfigClient</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;nacos&#x27;</span>;<br><span class="hljs-keyword">const</span> configClient = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NacosConfigClient</span>(&#123;<br>  <span class="hljs-attr">serverAddr</span>: <span class="hljs-string">&#x27;nacos-server:8848&#x27;</span>,<br>  <span class="hljs-attr">namespace</span>: <span class="hljs-string">&#x27;prod&#x27;</span>,<br>&#125;);<br><span class="hljs-comment">// 拉取初始配置</span><br><span class="hljs-keyword">let</span> appConfig = <span class="hljs-keyword">await</span> configClient.<span class="hljs-title function_">getConfig</span>(<span class="hljs-string">&#x27;koa-app-config&#x27;</span>, <span class="hljs-string">&#x27;DEFAULT_GROUP&#x27;</span>);<br>appConfig = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(appConfig);<br><span class="hljs-comment">// 监听配置变更</span><br>configClient.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;change&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =&gt;</span> &#123;<br>  <span class="hljs-keyword">if</span> (data.<span class="hljs-property">dataId</span> === <span class="hljs-string">&#x27;koa-app-config&#x27;</span>) &#123;<br>    appConfig = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(data.<span class="hljs-property">content</span>);<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;配置已更新&#x27;</span>, appConfig);<br>  &#125;<br>&#125;);<br><span class="hljs-comment">// 中间件中使用动态配置</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">rateLimit</span>(&#123; <span class="hljs-attr">max</span>: appConfig.<span class="hljs-property">rateLimit</span>.<span class="hljs-property">max</span> &#125;));<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>企业级保障：配置更新时加互斥锁，避免并发更新导致的配置不一致；<br><strong>案例</strong>：“游戏活动期间，突发流量峰值，通过配置中心将限流阈值从100QPS调整至500QPS，无需重启服务，10秒内生效，成功应对了流量冲击。”</li>
+</ol>
+<h3 id="（六）故障排查与运维类（题目11-12）"><a href="#（六）故障排查与运维类（题目11-12）" class="headerlink" title="（六）故障排查与运维类（题目11-12）"></a>（六）故障排查与运维类（题目11-12）</h3><h4 id="原题11：线上接口超时-x2F-500错误排查"><a href="#原题11：线上接口超时-x2F-500错误排查" class="headerlink" title="原题11：线上接口超时&#x2F;500错误排查"></a>原题11：线上接口超时&#x2F;500错误排查</h4><p><strong>高频追问</strong>：如何排查Koa项目的“偶发超时”问题？（如1%的请求超时，无固定规律）<br><strong>回答思路（突出排查方法论）</strong>：  </p>
+<ol>
+<li>日志增强：在关键节点（中间件入口&#x2F;出口、数据库查询前后）记录时间戳，定位超时环节；  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 耗时统计中间件</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> start = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>  ctx.<span class="hljs-property">requestId</span> = uuid.<span class="hljs-title function_">v4</span>();<br>  logger.<span class="hljs-title function_">info</span>(<span class="hljs-string">`[请求开始] <span class="hljs-subst">$&#123;ctx.method&#125;</span> <span class="hljs-subst">$&#123;ctx.url&#125;</span>`</span>, &#123; <span class="hljs-attr">requestId</span>: ctx.<span class="hljs-property">requestId</span> &#125;);<br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>  <span class="hljs-keyword">const</span> duration = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - start;<br>  <span class="hljs-comment">// 超时告警（超过500ms）</span><br>  <span class="hljs-keyword">if</span> (duration &gt; <span class="hljs-number">500</span>) &#123;<br>    logger.<span class="hljs-title function_">warn</span>(<span class="hljs-string">`[请求超时] <span class="hljs-subst">$&#123;ctx.method&#125;</span> <span class="hljs-subst">$&#123;ctx.url&#125;</span>`</span>, &#123;<br>      <span class="hljs-attr">requestId</span>: ctx.<span class="hljs-property">requestId</span>,<br>      duration,<br>      <span class="hljs-attr">params</span>: ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span><br>    &#125;);<br>  &#125;<br>&#125;);<br></code></pre></td></tr></table></figure></li>
+<li>链路追踪：集成SkyWalking&#x2F;Jaeger，追踪每个请求的调用链路（中间件→服务→数据库→Redis）；  </li>
+<li>常见原因与解决：  <ul>
+<li>数据库慢查询（偶发锁等待）：开启慢查询日志，优化索引或SQL；  </li>
+<li>Redis连接池耗尽：调整连接池大小（<code>max: 50</code>），监控连接数；  </li>
+<li>第三方接口超时：增加超时时间（<code>axios.defaults.timeout = 3000</code>）和重试机制（<code>axios-retry</code>）；<br><strong>案例</strong>：“曾遇到偶发超时（1%请求耗时&gt;1s），通过链路追踪发现是Redis集群分片迁移导致的短暂阻塞，后续优化了Redis连接池的重试策略（<code>retryStrategy: (times) =&gt; Math.min(times * 100, 3000)</code>），超时率降至0.01%以下。”</li>
+</ul>
+</li>
+</ol>
+<h4 id="原题12：Docker-K8s容器化部署"><a href="#原题12：Docker-K8s容器化部署" class="headerlink" title="原题12：Docker+K8s容器化部署"></a>原题12：Docker+K8s容器化部署</h4><p><strong>高频追问1</strong>：K8s部署Koa项目时，如何处理滚动更新的“服务不可用”问题？<br><strong>回答思路（突出高可用部署）</strong>：  </p>
+<ol>
+<li>核心配置：就绪探针（Readiness Probe）+ 存活探针（Liveness Probe）；  <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">readinessProbe:</span><br>  <span class="hljs-attr">httpGet:</span><br>    <span class="hljs-attr">path:</span> <span class="hljs-string">/health/readiness</span> <span class="hljs-comment"># 就绪接口：返回200表示可接收流量</span><br>    <span class="hljs-attr">port:</span> <span class="hljs-number">3000</span><br>  <span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">10</span> <span class="hljs-comment"># 启动后10秒开始检测</span><br>  <span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">5</span><br><span class="hljs-attr">livenessProbe:</span><br>  <span class="hljs-attr">httpGet:</span><br>    <span class="hljs-attr">path:</span> <span class="hljs-string">/health/liveness</span> <span class="hljs-comment"># 存活接口：返回200表示服务正常</span><br>    <span class="hljs-attr">port:</span> <span class="hljs-number">3000</span><br>  <span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">30</span><br>  <span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">10</span><br></code></pre></td></tr></table></figure></li>
+<li>滚动更新策略：  <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">strategy:</span><br>  <span class="hljs-attr">rollingUpdate:</span><br>    <span class="hljs-attr">maxSurge:</span> <span class="hljs-number">1</span> <span class="hljs-comment"># 最多新增1个副本</span><br>    <span class="hljs-attr">maxUnavailable:</span> <span class="hljs-number">0</span> <span class="hljs-comment"># 滚动更新期间，不可用副本数为0（确保服务不中断）</span><br></code></pre></td></tr></table></figure></li>
+<li>实现逻辑：  <ul>
+<li>新版本副本启动后，就绪探针返回200才接收流量；  </li>
+<li>旧版本副本在新版本就绪后才销毁；<br><strong>案例</strong>：“之前未配置就绪探针，滚动更新时新版本未启动完成就接收流量，导致5%的请求失败，配置探针后，更新期间服务可用性保持99.99%。”</li>
+</ul>
+</li>
+</ol>
+<p><strong>高频追问2</strong>：如何实现K8s下的日志收集和告警？<br><strong>回答思路（突出运维监控）</strong>：  </p>
+<ol>
+<li>日志收集：采用ELK&#x2F;EFK栈（Elasticsearch+Logstash&#x2F;Fluentd+Kibana）；  <ul>
+<li>Fluentd作为DaemonSet部署在每个节点，收集容器日志；  </li>
+<li>日志格式标准化（JSON格式，含<code>requestId</code>、<code>level</code>、<code>timestamp</code>）；</li>
+</ul>
+</li>
+<li>告警配置：  <ul>
+<li>基于Kibana告警：错误日志数5分钟内超过10条，触发邮件&#x2F;钉钉告警；  </li>
+<li>基于Prometheus+Grafana：接口错误率&gt;1%、响应时间&gt;500ms，触发告警；</li>
+</ul>
+</li>
+<li>企业级补充：“我们项目中告警分级（P0紧急&#x2F;P1重要&#x2F;P2普通），P0告警（如支付接口不可用）会触发电话通知，确保线上故障快速响应。”</li>
+</ol>
+<h2 id="二、通用回答技巧（突出企业级落地经验）"><a href="#二、通用回答技巧（突出企业级落地经验）" class="headerlink" title="二、通用回答技巧（突出企业级落地经验）"></a>二、通用回答技巧（突出企业级落地经验）</h2><h3 id="技巧1：用“量化指标”替代“模糊描述”"><a href="#技巧1：用“量化指标”替代“模糊描述”" class="headerlink" title="技巧1：用“量化指标”替代“模糊描述”"></a>技巧1：用“量化指标”替代“模糊描述”</h3><ul>
+<li>反面：“优化了接口性能，提升了响应速度”；  </li>
+<li>正面：“通过缓存优化+SQL索引调整，接口平均响应时间从150ms降至20ms，QPS支持从5000提升至5万，支撑了百万用户同时在线的游戏活动”。</li>
+</ul>
+<h3 id="技巧2：用“具体场景-踩坑经验”替代“纯理论”"><a href="#技巧2：用“具体场景-踩坑经验”替代“纯理论”" class="headerlink" title="技巧2：用“具体场景+踩坑经验”替代“纯理论”"></a>技巧2：用“具体场景+踩坑经验”替代“纯理论”</h3><ul>
+<li>反面：“JWT需要设置短期过期时间”；  </li>
+<li>正面：“我们项目中JWT的accessToken设置为15分钟，之前设置为2小时时，曾出现token被盗用导致的用户信息泄露，缩短过期时间后，配合refreshToken机制，既保证安全又不影响用户体验”。</li>
+</ul>
+<h3 id="技巧3：突出“跨领域整合能力”（安全-性能-运维）"><a href="#技巧3：突出“跨领域整合能力”（安全-性能-运维）" class="headerlink" title="技巧3：突出“跨领域整合能力”（安全+性能+运维）"></a>技巧3：突出“跨领域整合能力”（安全+性能+运维）</h3><ul>
+<li>回答时关联多技术栈，体现全局思维：“在设计缓存策略时，不仅考虑了性能（Redis+LRU），还兼顾了安全（缓存键加盐，防止缓存污染）和运维（缓存命中&#x2F;穿透率监控，触发告警）”。</li>
+</ul>
+<h3 id="技巧4：用“STAR法则”结构化呈现项目经验"><a href="#技巧4：用“STAR法则”结构化呈现项目经验" class="headerlink" title="技巧4：用“STAR法则”结构化呈现项目经验"></a>技巧4：用“STAR法则”结构化呈现项目经验</h3><ul>
+<li>每个核心案例都遵循：场景（S）→ 任务（T）→ 行动（A）→ 结果（R）；  </li>
+<li>重点突出“行动”中的技术选型理由和“结果”中的业务价值。</li>
+</ul>
+<h3 id="技巧5：主动暴露“复盘优化”，体现成长型思维"><a href="#技巧5：主动暴露“复盘优化”，体现成长型思维" class="headerlink" title="技巧5：主动暴露“复盘优化”，体现成长型思维"></a>技巧5：主动暴露“复盘优化”，体现成长型思维</h3><ul>
+<li>不要只说“成功案例”，还要说“踩过的坑+后续优化”：“之前用Redis做分布式锁时，未处理锁超时问题，导致死锁，后续优化为‘锁自动过期+续命机制’，同时增加锁竞争日志，便于排查问题”。</li>
+</ul>
+<h3 id="技巧6：紧扣“企业级核心需求”（高可用、高并发、安全、可维护）"><a href="#技巧6：紧扣“企业级核心需求”（高可用、高并发、安全、可维护）" class="headerlink" title="技巧6：紧扣“企业级核心需求”（高可用、高并发、安全、可维护）"></a>技巧6：紧扣“企业级核心需求”（高可用、高并发、安全、可维护）</h3><ul>
+<li>回答时反复关联这几个关键词，让面试官感知你懂企业级场景：“这个中间件设计时，重点考虑了可维护性（单一职责）和高可用（异常隔离，不影响全局流程）”。</li>
+</ul>
+<h2 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h2><p>Koa资深工程师面试的核心是“证明你能解决企业级复杂问题”，回答时需避免“只懂Koa”，要扩展到“Koa+生态（TS&#x2F;Redis&#x2F;数据库&#x2F;K8s）”的整合能力，通过“原理+案例+量化结果+复盘”的结构，突出你的落地经验和解决问题的能力。记住：面试官不关心你“知道什么”，而关心你“用这些知识解决了什么实际问题”。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Koa/" class="category-chain-item">Koa</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/TypeScript/">#TypeScript</a>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/%E7%BC%93%E5%AD%98/">#缓存</a>
+      
+        <a href="/tags/%E9%9D%A2%E8%AF%95/">#面试</a>
+      
+        <a href="/tags/Koa/">#Koa</a>
+      
+        <a href="/tags/Redis/">#Redis</a>
+      
+        <a href="/tags/XSS/">#XSS</a>
+      
+        <a href="/tags/CSRF/">#CSRF</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Koa 资深工程师面试题：高频追问+企业级回答技巧</div>
+      <div>https://zjw93615.github.io/2025/12/06/Koa/Koa 资深工程师面试题2/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/Koa/Koa%20%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%B4%8B%E8%91%B1%E6%A8%A1%E5%9E%8B/" title="Koa 中间件洋葱模型">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Koa 中间件洋葱模型</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/Koa/Koa%20%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/" title="可选（日志按天分割）：npm install winston-daily-rotate-file">
+                        <span class="hidden-mobile">可选（日志按天分割）：npm install winston-daily-rotate-file</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

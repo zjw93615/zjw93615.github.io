@@ -1,0 +1,733 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Koa 中间件性能优化：核心维度 + 实战方案（附代码）Koa 中间件的性能直接决定应用的吞吐量和响应速度，尤其在高并发场景下，不合理的中间件设计会导致「洋葱模型执行链路过长、异步阻塞、内存泄漏、资源浪费」等问题。以下从执行效率、异步操作、资源复用、加载策略、性能监控 5 个核心维度，结合代码示例讲解优化方案，所有方案均适配企业级高并发场景。 一、执行效率优化：减少无意义执行，缩短执行链路1. 精">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1. 检测内存泄漏">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/Koa/Koa%20%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="Koa 中间件性能优化：核心维度 + 实战方案（附代码）Koa 中间件的性能直接决定应用的吞吐量和响应速度，尤其在高并发场景下，不合理的中间件设计会导致「洋葱模型执行链路过长、异步阻塞、内存泄漏、资源浪费」等问题。以下从执行效率、异步操作、资源复用、加载策略、性能监控 5 个核心维度，结合代码示例讲解优化方案，所有方案均适配企业级高并发场景。 一、执行效率优化：减少无意义执行，缩短执行链路1. 精">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:39:36.513Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="缓存">
+<meta property="article:tag" content="Koa">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>1. 检测内存泄漏 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="1. 检测内存泄漏"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          95 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">1. 检测内存泄漏</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="Koa-中间件性能优化：核心维度-实战方案（附代码）"><a href="#Koa-中间件性能优化：核心维度-实战方案（附代码）" class="headerlink" title="Koa 中间件性能优化：核心维度 + 实战方案（附代码）"></a>Koa 中间件性能优化：核心维度 + 实战方案（附代码）</h3><p>Koa 中间件的性能直接决定应用的吞吐量和响应速度，尤其在高并发场景下，不合理的中间件设计会导致「洋葱模型执行链路过长、异步阻塞、内存泄漏、资源浪费」等问题。以下从<strong>执行效率、异步操作、资源复用、加载策略、性能监控</strong> 5 个核心维度，结合代码示例讲解优化方案，所有方案均适配企业级高并发场景。</p>
+<h2 id="一、执行效率优化：减少无意义执行，缩短执行链路"><a href="#一、执行效率优化：减少无意义执行，缩短执行链路" class="headerlink" title="一、执行效率优化：减少无意义执行，缩短执行链路"></a>一、执行效率优化：减少无意义执行，缩短执行链路</h2><h3 id="1-精准注册中间件（避免全局“一刀切”）"><a href="#1-精准注册中间件（避免全局“一刀切”）" class="headerlink" title="1. 精准注册中间件（避免全局“一刀切”）"></a>1. 精准注册中间件（避免全局“一刀切”）</h3><p><strong>问题</strong>：全局注册所有中间件（如限流、鉴权），导致静态资源、健康检查等接口也执行冗余逻辑，增加执行耗时。<br><strong>优化方案</strong>：按「路由&#x2F;模块&#x2F;接口」精准注册中间件，仅让需要的接口执行对应中间件。</p>
+<h4 id="代码示例：按路由模块注册中间件"><a href="#代码示例：按路由模块注册中间件" class="headerlink" title="代码示例：按路由模块注册中间件"></a>代码示例：按路由模块注册中间件</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Router</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-router&#x27;</span>);<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><span class="hljs-keyword">const</span> redisRateLimit = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./middleware/redisRateLimit&#x27;</span>); <span class="hljs-comment">// 限流中间件</span><br><span class="hljs-keyword">const</span> authMiddleware = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./middleware/auth&#x27;</span>); <span class="hljs-comment">// 鉴权中间件</span><br><br><span class="hljs-comment">// 1. 健康检查路由：无需限流/鉴权，不注册任何业务中间件</span><br><span class="hljs-keyword">const</span> healthRouter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Router</span>(&#123; <span class="hljs-attr">prefix</span>: <span class="hljs-string">&#x27;/health&#x27;</span> &#125;);<br>healthRouter.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">status</span>: <span class="hljs-string">&#x27;healthy&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">// 2. 订单路由：仅注册限流+鉴权中间件（全局不注册）</span><br><span class="hljs-keyword">const</span> orderRouter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Router</span>(&#123; <span class="hljs-attr">prefix</span>: <span class="hljs-string">&#x27;/api/order&#x27;</span> &#125;);<br>orderRouter.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">redisRateLimit</span>(&#123; <span class="hljs-attr">capacity</span>: <span class="hljs-number">50</span>, <span class="hljs-attr">refillRate</span>: <span class="hljs-number">5</span> &#125;)); <span class="hljs-comment">// 仅订单接口限流</span><br>orderRouter.<span class="hljs-title function_">use</span>(authMiddleware); <span class="hljs-comment">// 仅订单接口鉴权</span><br>orderRouter.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/create&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;订单创建成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">// 3. 静态资源路由：仅注册静态资源中间件，且执行后直接返回（不穿透后续中间件）</span><br><span class="hljs-keyword">const</span> staticRouter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Router</span>(&#123; <span class="hljs-attr">prefix</span>: <span class="hljs-string">&#x27;/static&#x27;</span> &#125;);<br>staticRouter.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-keyword">if</span> (ctx.<span class="hljs-property">path</span>.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">&#x27;.js&#x27;</span>) || ctx.<span class="hljs-property">path</span>.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">&#x27;.css&#x27;</span>)) &#123;<br>    ctx.<span class="hljs-property">body</span> = <span class="hljs-string">&#x27;静态资源内容&#x27;</span>;<br>    <span class="hljs-keyword">return</span>; <span class="hljs-comment">// 不执行next()，缩短洋葱模型链路</span><br>  &#125;<br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>&#125;);<br><br><span class="hljs-comment">// 注册路由（顺序不影响，因为中间件已绑定到路由）</span><br>app.<span class="hljs-title function_">use</span>(healthRouter.<span class="hljs-title function_">routes</span>());<br>app.<span class="hljs-title function_">use</span>(orderRouter.<span class="hljs-title function_">routes</span>());<br>app.<span class="hljs-title function_">use</span>(staticRouter.<span class="hljs-title function_">routes</span>());<br><br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-优化洋葱模型执行路径（减少无效穿透）"><a href="#2-优化洋葱模型执行路径（减少无效穿透）" class="headerlink" title="2. 优化洋葱模型执行路径（减少无效穿透）"></a>2. 优化洋葱模型执行路径（减少无效穿透）</h3><p><strong>问题</strong>：中间件执行 <code>await next()</code> 后无后续逻辑，却仍穿透到下一个中间件，增加上下文切换成本。<br><strong>优化方案</strong>：对“终端型”中间件（如静态资源、404处理），匹配成功后直接返回，不调用 <code>next()</code>。</p>
+<h4 id="代码示例：静态资源中间件提前终止链路"><a href="#代码示例：静态资源中间件提前终止链路" class="headerlink" title="代码示例：静态资源中间件提前终止链路"></a>代码示例：静态资源中间件提前终止链路</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fs&#x27;</span>).<span class="hljs-property">promises</span>;<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br><span class="hljs-comment">// 优化前：无论是否匹配静态资源，都执行next()</span><br><span class="hljs-comment">// app.use(async (ctx, next) =&gt; &#123;</span><br><span class="hljs-comment">//   if (ctx.path.startsWith(&#x27;/static&#x27;)) &#123;</span><br><span class="hljs-comment">//     ctx.body = await fs.readFile(`./static$&#123;ctx.path&#125;`);</span><br><span class="hljs-comment">//   &#125;</span><br><span class="hljs-comment">//   await next(); // 无效穿透，浪费性能</span><br><span class="hljs-comment">// &#125;);</span><br><br><span class="hljs-comment">// 优化后：匹配静态资源后直接返回，不执行next()</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-keyword">if</span> (ctx.<span class="hljs-property">path</span>.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&#x27;/static&#x27;</span>)) &#123;<br>    <span class="hljs-keyword">try</span> &#123;<br>      ctx.<span class="hljs-property">body</span> = <span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">`./static<span class="hljs-subst">$&#123;ctx.path&#125;</span>`</span>);<br>      <span class="hljs-keyword">return</span>; <span class="hljs-comment">// 终止链路，不执行后续中间件</span><br>    &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>      ctx.<span class="hljs-property">status</span> = <span class="hljs-number">404</span>;<br>      ctx.<span class="hljs-property">body</span> = <span class="hljs-string">&#x27;静态资源不存在&#x27;</span>;<br>      <span class="hljs-keyword">return</span>;<br>    &#125;<br>  &#125;<br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>(); <span class="hljs-comment">// 非静态资源，继续执行</span><br>&#125;);<br><br><span class="hljs-comment">// 后续业务中间件（仅非静态资源请求执行）</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  ctx.<span class="hljs-property">body</span> = <span class="hljs-string">&#x27;业务接口响应&#x27;</span>;<br>&#125;);<br><br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-剔除冗余逻辑，合并无意义中间件"><a href="#3-剔除冗余逻辑，合并无意义中间件" class="headerlink" title="3. 剔除冗余逻辑，合并无意义中间件"></a>3. 剔除冗余逻辑，合并无意义中间件</h3><p><strong>问题</strong>：过度拆分细粒度中间件（如“日志入参”+“日志出参”拆分为两个中间件），增加洋葱模型的嵌套层级。<br><strong>优化方案</strong>：合并功能强相关的中间件（平衡可维护性与性能），剔除无实际逻辑的空中间件。</p>
+<h4 id="代码示例：合并日志中间件（入参-出参）"><a href="#代码示例：合并日志中间件（入参-出参）" class="headerlink" title="代码示例：合并日志中间件（入参+出参）"></a>代码示例：合并日志中间件（入参+出参）</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 优化前：拆分两个中间件，增加执行层级</span><br><span class="hljs-comment">// app.use(async (ctx, next) =&gt; &#123;</span><br><span class="hljs-comment">//   console.log(`[入参] $&#123;ctx.method&#125; $&#123;ctx.url&#125;`, ctx.query);</span><br><span class="hljs-comment">//   await next();</span><br><span class="hljs-comment">// &#125;);</span><br><span class="hljs-comment">// app.use(async (ctx, next) =&gt; &#123;</span><br><span class="hljs-comment">//   await next();</span><br><span class="hljs-comment">//   console.log(`[出参] $&#123;ctx.status&#125;`, ctx.body);</span><br><span class="hljs-comment">// &#125;);</span><br><br><span class="hljs-comment">// 优化后：合并为一个中间件，减少层级</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-comment">// 入参日志</span><br>  <span class="hljs-keyword">const</span> start = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[入参] <span class="hljs-subst">$&#123;ctx.method&#125;</span> <span class="hljs-subst">$&#123;ctx.url&#125;</span>`</span>, ctx.<span class="hljs-property">query</span>);<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>    <span class="hljs-comment">// 出参日志（仅成功请求）</span><br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[出参] <span class="hljs-subst">$&#123;ctx.status&#125;</span>`</span>, ctx.<span class="hljs-property">body</span>, <span class="hljs-string">`耗时: <span class="hljs-subst">$&#123;<span class="hljs-built_in">Date</span>.now() - start&#125;</span>ms`</span>);<br>  &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>    <span class="hljs-comment">// 错误日志（失败请求）</span><br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">`[错误] <span class="hljs-subst">$&#123;err.message&#125;</span>`</span>, <span class="hljs-string">`耗时: <span class="hljs-subst">$&#123;<span class="hljs-built_in">Date</span>.now() - start&#125;</span>ms`</span>);<br>    <span class="hljs-keyword">throw</span> err;<br>  &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h2 id="二、异步操作优化：减少阻塞，提升并发能力"><a href="#二、异步操作优化：减少阻塞，提升并发能力" class="headerlink" title="二、异步操作优化：减少阻塞，提升并发能力"></a>二、异步操作优化：减少阻塞，提升并发能力</h2><h3 id="1-异步操作并行化（避免串行阻塞）"><a href="#1-异步操作并行化（避免串行阻塞）" class="headerlink" title="1. 异步操作并行化（避免串行阻塞）"></a>1. 异步操作并行化（避免串行阻塞）</h3><p><strong>问题</strong>：中间件内串行执行多个异步操作（如先查MySQL，再查Redis），总耗时&#x3D;各操作耗时之和。<br><strong>优化方案</strong>：无依赖的异步操作通过 <code>Promise.all</code> 并行执行，总耗时&#x3D;最长异步操作耗时。</p>
+<h4 id="代码示例：并行检查多依赖健康状态"><a href="#代码示例：并行检查多依赖健康状态" class="headerlink" title="代码示例：并行检查多依赖健康状态"></a>代码示例：并行检查多依赖健康状态</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> mysql = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mysql2/promise&#x27;</span>);<br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Redis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;ioredis&#x27;</span>);<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br><span class="hljs-comment">// 优化前：串行执行，总耗时=mysql耗时+redis耗时</span><br><span class="hljs-comment">// app.use(async (ctx, next) =&gt; &#123;</span><br><span class="hljs-comment">//   const mysqlConn = await mysql.createConnection(&#123; host: &#x27;localhost&#x27; &#125;);</span><br><span class="hljs-comment">//   await mysqlConn.ping(); // 串行1</span><br><span class="hljs-comment">//   const redis = new Redis();</span><br><span class="hljs-comment">//   await redis.ping(); // 串行2</span><br><span class="hljs-comment">//   await next();</span><br><span class="hljs-comment">// &#125;);</span><br><br><span class="hljs-comment">// 优化后：并行执行，总耗时=max(mysql耗时, redis耗时)</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-comment">// 1. 创建异步任务（不立即执行）</span><br>  <span class="hljs-keyword">const</span> <span class="hljs-title function_">mysqlTask</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; &#123;<br>    <span class="hljs-keyword">const</span> conn = <span class="hljs-keyword">await</span> mysql.<span class="hljs-title function_">createConnection</span>(&#123; <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;localhost&#x27;</span> &#125;);<br>    <span class="hljs-keyword">await</span> conn.<span class="hljs-title function_">ping</span>();<br>    <span class="hljs-keyword">await</span> conn.<span class="hljs-title function_">end</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&#x27;mysql healthy&#x27;</span>;<br>  &#125;;<br>  <span class="hljs-keyword">const</span> <span class="hljs-title function_">redisTask</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; &#123;<br>    <span class="hljs-keyword">const</span> redis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>();<br>    <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">ping</span>();<br>    <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">quit</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&#x27;redis healthy&#x27;</span>;<br>  &#125;;<br><br>  <span class="hljs-comment">// 2. 并行执行</span><br>  <span class="hljs-keyword">const</span> [mysqlResult, redisResult] = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>([<span class="hljs-title function_">mysqlTask</span>(), <span class="hljs-title function_">redisTask</span>()]);<br>  ctx.<span class="hljs-property">state</span>.<span class="hljs-property">deps</span> = &#123; mysqlResult, redisResult &#125;;<br><br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>&#125;);<br><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">deps</span>: ctx.<span class="hljs-property">state</span>.<span class="hljs-property">deps</span> &#125;;<br>&#125;);<br><br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-复用连接池（避免频繁创建-x2F-销毁连接）"><a href="#2-复用连接池（避免频繁创建-x2F-销毁连接）" class="headerlink" title="2. 复用连接池（避免频繁创建&#x2F;销毁连接）"></a>2. 复用连接池（避免频繁创建&#x2F;销毁连接）</h3><p><strong>问题</strong>：中间件内每次请求都创建数据库&#x2F;Redis连接，连接创建耗时占比高，且易耗尽系统资源。<br><strong>优化方案</strong>：使用连接池复用连接，全局初始化一次，中间件仅获取&#x2F;释放连接（而非创建&#x2F;销毁）。</p>
+<h4 id="代码示例：MySQL连接池复用"><a href="#代码示例：MySQL连接池复用" class="headerlink" title="代码示例：MySQL连接池复用"></a>代码示例：MySQL连接池复用</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> mysql = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mysql2/promise&#x27;</span>);<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br><span class="hljs-comment">// 全局初始化连接池（仅启动时执行一次）</span><br><span class="hljs-keyword">const</span> mysqlPool = mysql.<span class="hljs-title function_">createPool</span>(&#123;<br>  <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;localhost&#x27;</span>,<br>  <span class="hljs-attr">user</span>: <span class="hljs-string">&#x27;root&#x27;</span>,<br>  <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;123456&#x27;</span>,<br>  <span class="hljs-attr">database</span>: <span class="hljs-string">&#x27;test&#x27;</span>,<br>  <span class="hljs-attr">waitForConnections</span>: <span class="hljs-literal">true</span>,<br>  <span class="hljs-attr">connectionLimit</span>: <span class="hljs-number">10</span>, <span class="hljs-comment">// 连接池大小（适配并发量）</span><br>  <span class="hljs-attr">queueLimit</span>: <span class="hljs-number">0</span><br>&#125;);<br><br><span class="hljs-comment">// 中间件：仅从连接池获取连接，用完自动归还（无需手动关闭）</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-comment">// 优化前：每次创建新连接（耗时~100ms）</span><br>  <span class="hljs-comment">// const conn = await mysql.createConnection(&#123; ... &#125;);</span><br>  <span class="hljs-comment">// await conn.query(&#x27;SELECT * FROM user&#x27;);</span><br>  <span class="hljs-comment">// await conn.end();</span><br><br>  <span class="hljs-comment">// 优化后：从连接池获取连接（耗时~1ms）</span><br>  <span class="hljs-keyword">const</span> [rows] = <span class="hljs-keyword">await</span> mysqlPool.<span class="hljs-title function_">query</span>(<span class="hljs-string">&#x27;SELECT * FROM user LIMIT 1&#x27;</span>);<br>  ctx.<span class="hljs-property">state</span>.<span class="hljs-property">user</span> = rows[<span class="hljs-number">0</span>];<br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>&#125;);<br><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">user</span>: ctx.<span class="hljs-property">state</span>.<span class="hljs-property">user</span> &#125;;<br>&#125;);<br><br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-避免异步操作嵌套（扁平化async-x2F-await）"><a href="#3-避免异步操作嵌套（扁平化async-x2F-await）" class="headerlink" title="3. 避免异步操作嵌套（扁平化async&#x2F;await）"></a>3. 避免异步操作嵌套（扁平化async&#x2F;await）</h3><p><strong>问题</strong>：异步操作嵌套（回调地狱）导致执行链路变长，且易遗漏错误捕获。<br><strong>优化方案</strong>：用 <code>async/await</code> 扁平化异步逻辑，统一错误捕获。</p>
+<h4 id="代码示例：扁平化异步逻辑"><a href="#代码示例：扁平化异步逻辑" class="headerlink" title="代码示例：扁平化异步逻辑"></a>代码示例：扁平化异步逻辑</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 优化前：嵌套异步，执行效率低且错误捕获复杂</span><br><span class="hljs-comment">// app.use(async (ctx, next) =&gt; &#123;</span><br><span class="hljs-comment">//   mysql.createConnection(&#123; ... &#125;, (err, conn) =&gt; &#123;</span><br><span class="hljs-comment">//     conn.query(&#x27;SELECT * FROM user&#x27;, (err, rows) =&gt; &#123;</span><br><span class="hljs-comment">//       redis.get(`user:$&#123;rows[0].id&#125;`, (err, data) =&gt; &#123;</span><br><span class="hljs-comment">//         ctx.state.user = data;</span><br><span class="hljs-comment">//         next();</span><br><span class="hljs-comment">//       &#125;);</span><br><span class="hljs-comment">//     &#125;);</span><br><span class="hljs-comment">//   &#125;);</span><br><span class="hljs-comment">// &#125;);</span><br><br><span class="hljs-comment">// 优化后：扁平化async/await，执行效率高且错误易捕获</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-keyword">const</span> [userRows] = <span class="hljs-keyword">await</span> mysqlPool.<span class="hljs-title function_">query</span>(<span class="hljs-string">&#x27;SELECT * FROM user LIMIT 1&#x27;</span>);<br>    <span class="hljs-keyword">const</span> userCache = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">get</span>(<span class="hljs-string">`user:<span class="hljs-subst">$&#123;userRows[<span class="hljs-number">0</span>].id&#125;</span>`</span>);<br>    ctx.<span class="hljs-property">state</span>.<span class="hljs-property">user</span> = userCache || userRows[<span class="hljs-number">0</span>]; <span class="hljs-comment">// 缓存优先</span><br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>  &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;异步操作失败:&#x27;</span>, err);<br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;服务异常&#x27;</span>);<br>  &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h2 id="三、资源与内存优化：减少泄漏，降低GC压力"><a href="#三、资源与内存优化：减少泄漏，降低GC压力" class="headerlink" title="三、资源与内存优化：减少泄漏，降低GC压力"></a>三、资源与内存优化：减少泄漏，降低GC压力</h2><h3 id="1-避免内存泄漏（释放所有资源）"><a href="#1-避免内存泄漏（释放所有资源）" class="headerlink" title="1. 避免内存泄漏（释放所有资源）"></a>1. 避免内存泄漏（释放所有资源）</h3><p><strong>问题</strong>：中间件内创建的定时器、事件监听、文件句柄未释放，导致内存持续增长，最终OOM。<br><strong>优化方案</strong>：所有资源在 <code>finally</code> 块中释放，避免遗漏；全局资源单例化，避免重复创建。</p>
+<h4 id="代码示例：确保资源释放（定时器-x2F-连接）"><a href="#代码示例：确保资源释放（定时器-x2F-连接）" class="headerlink" title="代码示例：确保资源释放（定时器&#x2F;连接）"></a>代码示例：确保资源释放（定时器&#x2F;连接）</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs javascript">app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-keyword">let</span> timer = <span class="hljs-literal">null</span>;<br>  <span class="hljs-keyword">let</span> redisClient = <span class="hljs-literal">null</span>;<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-comment">// 模拟异步任务定时器</span><br>    timer = <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;异步任务执行&#x27;</span>), <span class="hljs-number">1000</span>);<br>    <span class="hljs-comment">// 获取Redis连接</span><br>    redisClient = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>();<br>    <span class="hljs-keyword">await</span> redisClient.<span class="hljs-title function_">ping</span>();<br><br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>  &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>    <span class="hljs-keyword">throw</span> err;<br>  &#125; <span class="hljs-keyword">finally</span> &#123;<br>    <span class="hljs-comment">// 无论是否出错，都释放资源</span><br>    <span class="hljs-keyword">if</span> (timer) <span class="hljs-built_in">clearTimeout</span>(timer);<br>    <span class="hljs-keyword">if</span> (redisClient) <span class="hljs-keyword">await</span> redisClient.<span class="hljs-title function_">quit</span>();<br>  &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-复用对象-x2F-函数（减少GC）"><a href="#2-复用对象-x2F-函数（减少GC）" class="headerlink" title="2. 复用对象&#x2F;函数（减少GC）"></a>2. 复用对象&#x2F;函数（减少GC）</h3><p><strong>问题</strong>：中间件内每次请求都创建新函数、对象（如参数校验规则、日志格式器），触发频繁GC（垃圾回收），导致性能波动。<br><strong>优化方案</strong>：将不变的对象&#x2F;函数提取到中间件外部，复用实例。</p>
+<h4 id="代码示例：复用参数校验规则"><a href="#代码示例：复用参数校验规则" class="headerlink" title="代码示例：复用参数校验规则"></a>代码示例：复用参数校验规则</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 优化前：每次请求都创建新的校验规则对象（触发GC）</span><br><span class="hljs-comment">// app.use(async (ctx, next) =&gt; &#123;</span><br><span class="hljs-comment">//   const rules = &#123;</span><br><span class="hljs-comment">//     name: &#123; type: &#x27;string&#x27;, required: true &#125;,</span><br><span class="hljs-comment">//     age: &#123; type: &#x27;number&#x27;, required: false &#125;</span><br><span class="hljs-comment">//   &#125;;</span><br><span class="hljs-comment">//   // 执行校验...</span><br><span class="hljs-comment">//   await next();</span><br><span class="hljs-comment">// &#125;);</span><br><br><span class="hljs-comment">// 优化后：全局复用校验规则对象（仅创建一次）</span><br><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">USER_VALIDATE_RULES</span> = &#123;<br>  <span class="hljs-attr">name</span>: &#123; <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;string&#x27;</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span> &#125;,<br>  <span class="hljs-attr">age</span>: &#123; <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">false</span> &#125;<br>&#125;;<br><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-comment">// 复用全局规则，不创建新对象</span><br>  <span class="hljs-keyword">const</span> errors = <span class="hljs-title function_">validateParams</span>(ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>, <span class="hljs-variable constant_">USER_VALIDATE_RULES</span>);<br>  <span class="hljs-keyword">if</span> (errors.<span class="hljs-property">length</span>) &#123;<br>    ctx.<span class="hljs-property">status</span> = <span class="hljs-number">400</span>;<br>    ctx.<span class="hljs-property">body</span> = &#123; errors &#125;;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>&#125;);<br><br><span class="hljs-comment">// 复用校验函数（全局仅定义一次）</span><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">validateParams</span>(<span class="hljs-params">data, rules</span>) &#123;<br>  <span class="hljs-keyword">const</span> errors = [];<br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, rule] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(rules)) &#123;<br>    <span class="hljs-keyword">if</span> (rule.<span class="hljs-property">required</span> &amp;&amp; !data[key]) &#123;<br>      errors.<span class="hljs-title function_">push</span>(<span class="hljs-string">`<span class="hljs-subst">$&#123;key&#125;</span>不能为空`</span>);<br>    &#125;<br>  &#125;<br>  <span class="hljs-keyword">return</span> errors;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-限制请求体大小（防止内存溢出）"><a href="#3-限制请求体大小（防止内存溢出）" class="headerlink" title="3. 限制请求体大小（防止内存溢出）"></a>3. 限制请求体大小（防止内存溢出）</h3><p><strong>问题</strong>：恶意请求发送超大请求体（如100MB），导致中间件解析请求体时内存暴涨。<br><strong>优化方案</strong>：通过 <code>koa-body</code> 限制请求体大小，超出直接拒绝。</p>
+<h4 id="代码示例：限制请求体大小"><a href="#代码示例：限制请求体大小" class="headerlink" title="代码示例：限制请求体大小"></a>代码示例：限制请求体大小</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> koaBody = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-body&#x27;</span>);<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br><span class="hljs-comment">// 限制请求体大小：JSON/表单最大1MB，文件最大10MB</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">koaBody</span>(&#123;<br>  <span class="hljs-attr">jsonLimit</span>: <span class="hljs-string">&#x27;1mb&#x27;</span>,<br>  <span class="hljs-attr">formLimit</span>: <span class="hljs-string">&#x27;1mb&#x27;</span>,<br>  <span class="hljs-attr">multipart</span>: <span class="hljs-literal">true</span>,<br>  <span class="hljs-attr">formidable</span>: &#123;<br>    <span class="hljs-attr">maxFileSize</span>: <span class="hljs-number">10</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> <span class="hljs-comment">// 10MB</span><br>  &#125;,<br>  <span class="hljs-attr">onError</span>: <span class="hljs-function">(<span class="hljs-params">err, ctx</span>) =&gt;</span> &#123;<br>    ctx.<span class="hljs-property">status</span> = <span class="hljs-number">413</span>; <span class="hljs-comment">// 请求实体过大</span><br>    ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">413</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;请求体大小超出限制&#x27;</span> &#125;;<br>  &#125;<br>&#125;));<br><br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<h2 id="四、加载策略优化：按需加载，减少启动耗时"><a href="#四、加载策略优化：按需加载，减少启动耗时" class="headerlink" title="四、加载策略优化：按需加载，减少启动耗时"></a>四、加载策略优化：按需加载，减少启动耗时</h2><h3 id="1-懒加载非核心中间件"><a href="#1-懒加载非核心中间件" class="headerlink" title="1. 懒加载非核心中间件"></a>1. 懒加载非核心中间件</h3><p><strong>问题</strong>：启动时加载所有中间件（如接口文档、调试工具），即使生产环境不需要，增加启动耗时和内存占用。<br><strong>优化方案</strong>：按环境&#x2F;请求按需加载中间件，非核心中间件仅在需要时初始化。</p>
+<h4 id="代码示例：开发环境懒加载Swagger中间件"><a href="#代码示例：开发环境懒加载Swagger中间件" class="headerlink" title="代码示例：开发环境懒加载Swagger中间件"></a>代码示例：开发环境懒加载Swagger中间件</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br><span class="hljs-comment">// 生产环境不加载Swagger，开发环境仅第一次请求/swagger时加载</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-keyword">if</span> (process.<span class="hljs-property">env</span>.<span class="hljs-property">NODE_ENV</span> === <span class="hljs-string">&#x27;production&#x27;</span>) &#123;<br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br><br>  <span class="hljs-keyword">if</span> (ctx.<span class="hljs-property">path</span>.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&#x27;/swagger&#x27;</span>)) &#123;<br>    <span class="hljs-comment">// 懒加载：仅第一次请求时require，避免启动时加载</span><br>    <span class="hljs-keyword">const</span> swaggerMiddleware = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-swagger-decorator&#x27;</span>).<span class="hljs-property">swaggerMiddleware</span>;<br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">swaggerMiddleware</span>(&#123;<br>      <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;API文档&#x27;</span>,<br>      <span class="hljs-attr">version</span>: <span class="hljs-string">&#x27;1.0.0&#x27;</span><br>    &#125;)(ctx, next);<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br><br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>&#125;);<br><br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-缓存中间件实例（避免重复初始化）"><a href="#2-缓存中间件实例（避免重复初始化）" class="headerlink" title="2. 缓存中间件实例（避免重复初始化）"></a>2. 缓存中间件实例（避免重复初始化）</h3><p><strong>问题</strong>：每次注册中间件都创建新实例（如限流中间件），重复初始化Redis连接、Lua脚本，浪费资源。<br><strong>优化方案</strong>：单例模式创建中间件实例，全局复用。</p>
+<h4 id="代码示例：单例限流中间件"><a href="#代码示例：单例限流中间件" class="headerlink" title="代码示例：单例限流中间件"></a>代码示例：单例限流中间件</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// middleware/redisRateLimit.js（修改为单例）</span><br><span class="hljs-keyword">let</span> rateLimitInstance = <span class="hljs-literal">null</span>;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">RedisRateLimit</span> &#123;<br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">options</span>) &#123; <span class="hljs-comment">/* 初始化逻辑 */</span> &#125;<br>  <span class="hljs-title function_">middleware</span>(<span class="hljs-params"></span>) &#123; <span class="hljs-comment">/* 中间件逻辑 */</span> &#125;<br>&#125;<br><br><span class="hljs-comment">// 单例导出：仅创建一次实例</span><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = <span class="hljs-function">(<span class="hljs-params">options</span>) =&gt;</span> &#123;<br>  <span class="hljs-keyword">if</span> (!rateLimitInstance) &#123;<br>    rateLimitInstance = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisRateLimit</span>(options);<br>  &#125;<br>  <span class="hljs-keyword">return</span> rateLimitInstance.<span class="hljs-title function_">middleware</span>();<br>&#125;;<br><br><span class="hljs-comment">// 业务代码中多次注册，仍复用同一个实例</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">redisRateLimit</span>(&#123; <span class="hljs-attr">capacity</span>: <span class="hljs-number">50</span> &#125;));<br>orderRouter.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">redisRateLimit</span>(&#123; <span class="hljs-attr">capacity</span>: <span class="hljs-number">50</span> &#125;)); <span class="hljs-comment">// 复用已有实例</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="五、性能监控与瓶颈定位：量化优化效果"><a href="#五、性能监控与瓶颈定位：量化优化效果" class="headerlink" title="五、性能监控与瓶颈定位：量化优化效果"></a>五、性能监控与瓶颈定位：量化优化效果</h2><h3 id="1-中间件耗时统计（定位慢中间件）"><a href="#1-中间件耗时统计（定位慢中间件）" class="headerlink" title="1. 中间件耗时统计（定位慢中间件）"></a>1. 中间件耗时统计（定位慢中间件）</h3><p><strong>问题</strong>：无法量化每个中间件的执行耗时，优化无方向。<br><strong>优化方案</strong>：添加全局耗时统计中间件，记录每个中间件的执行时间，定位瓶颈。</p>
+<h4 id="代码示例：中间件耗时统计"><a href="#代码示例：中间件耗时统计" class="headerlink" title="代码示例：中间件耗时统计"></a>代码示例：中间件耗时统计</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br><span class="hljs-comment">// 耗时统计中间件（必须放在最前置）</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-comment">// 记录每个中间件的执行开始时间</span><br>  ctx.<span class="hljs-property">_middlewareStart</span> = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>  ctx.<span class="hljs-property">_middlewareTimes</span> = []; <span class="hljs-comment">// 存储：[中间件名称, 耗时]</span><br><br>  <span class="hljs-comment">// 重写next，统计每个中间件耗时</span><br>  <span class="hljs-keyword">const</span> originalNext = next;<br>  <span class="hljs-keyword">let</span> middlewareIndex = <span class="hljs-number">0</span>;<br>  <span class="hljs-keyword">const</span> <span class="hljs-title function_">wrappedNext</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; &#123;<br>    <span class="hljs-keyword">const</span> start = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>    middlewareIndex++;<br>    <span class="hljs-keyword">const</span> middlewareName = <span class="hljs-string">`middleware-<span class="hljs-subst">$&#123;middlewareIndex&#125;</span>`</span>; <span class="hljs-comment">// 可自定义中间件名称</span><br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">originalNext</span>();<br>    <span class="hljs-keyword">const</span> cost = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - start;<br>    ctx.<span class="hljs-property">_middlewareTimes</span>.<span class="hljs-title function_">push</span>([middlewareName, cost]);<br>  &#125;;<br><br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">wrappedNext</span>();<br><br>  <span class="hljs-comment">// 所有中间件执行完成后，输出耗时（生产环境可写入日志/监控）</span><br>  <span class="hljs-keyword">const</span> totalCost = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - ctx.<span class="hljs-property">_middlewareStart</span>;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`总耗时: <span class="hljs-subst">$&#123;totalCost&#125;</span>ms，各中间件耗时:`</span>, ctx.<span class="hljs-property">_middlewareTimes</span>);<br>&#125;);<br><br><span class="hljs-comment">// 模拟慢中间件（定位瓶颈）</span><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>  <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> <span class="hljs-built_in">setTimeout</span>(resolve, <span class="hljs-number">100</span>)); <span class="hljs-comment">// 模拟100ms耗时</span><br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>&#125;);<br><br>app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  ctx.<span class="hljs-property">body</span> = <span class="hljs-string">&#x27;success&#x27;</span>;<br>&#125;);<br><br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-工具化检测瓶颈"><a href="#2-工具化检测瓶颈" class="headerlink" title="2. 工具化检测瓶颈"></a>2. 工具化检测瓶颈</h3><ul>
+<li><strong>clinic.js</strong>：检测内存泄漏、CPU瓶颈、事件循环延迟；</li>
+<li><strong>0x</strong>：生成CPU火焰图，定位耗时函数；</li>
+<li><strong>Prometheus + Grafana</strong>：监控QPS、响应时间、中间件执行次数，可视化性能趋势。</li>
+</ul>
+<h4 id="常用命令示例"><a href="#常用命令示例" class="headerlink" title="常用命令示例"></a>常用命令示例</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 1. 检测内存泄漏</span><br>clinic heapprofiler -- node app.js<br><br><span class="hljs-comment"># 2. 生成CPU火焰图（定位慢函数）</span><br>0x app.js<br><br><span class="hljs-comment"># 3. 检测事件循环延迟（异步阻塞）</span><br>clinic bubbleprof -- node app.js<br></code></pre></td></tr></table></figure>
+
+<h2 id="六、优化总结"><a href="#六、优化总结" class="headerlink" title="六、优化总结"></a>六、优化总结</h2><table>
+<thead>
+<tr>
+<th>优化维度</th>
+<th>核心手段</th>
+<th>性能收益</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行效率</td>
+<td>精准注册、提前终止链路、合并冗余中间件</td>
+<td>减少30%-50%的中间件执行耗时</td>
+</tr>
+<tr>
+<td>异步操作</td>
+<td>并行化、连接池、扁平化async&#x2F;await</td>
+<td>提升2-5倍的异步并发能力</td>
+</tr>
+<tr>
+<td>资源内存</td>
+<td>释放资源、复用对象、限制请求体</td>
+<td>降低80%的内存泄漏风险</td>
+</tr>
+<tr>
+<td>加载策略</td>
+<td>懒加载、单例复用</td>
+<td>减少50%的启动耗时</td>
+</tr>
+<tr>
+<td>监控定位</td>
+<td>耗时统计、工具检测</td>
+<td>快速定位90%的性能瓶颈</td>
+</tr>
+</tbody></table>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Koa/" class="category-chain-item">Koa</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/%E7%BC%93%E5%AD%98/">#缓存</a>
+      
+        <a href="/tags/Koa/">#Koa</a>
+      
+        <a href="/tags/Redis/">#Redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>1. 检测内存泄漏</div>
+      <div>https://zjw93615.github.io/2025/12/06/Koa/Koa 中间件性能优化/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/React/React%E9%9D%A2%E8%AF%95%E9%A2%98%E7%9B%AE/" title="React面试题目及详细解答">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">React面试题目及详细解答</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/Koa/Koa%20%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%AE%A1%E7%90%86/" title="1. 检查项目依赖漏洞（npm内置）">
+                        <span class="hidden-mobile">1. 检查项目依赖漏洞（npm内置）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

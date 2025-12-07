@@ -1,0 +1,680 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="React与Vue中的重排重绘优化策略一、React中的重排重绘优化1. 组件级渲染优化(1) React.memo与props比较123456789101112131415161718192021222324252627282930313233343536373839404142434445&#x2F;&#x2F; 防止不必要的重新渲染const ExpensiveComponent &#x3D; React.memo((&amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React与Vue中的重排重绘优化策略">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/%E9%87%8D%E6%8E%92/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="React与Vue中的重排重绘优化策略一、React中的重排重绘优化1. 组件级渲染优化(1) React.memo与props比较123456789101112131415161718192021222324252627282930313233343536373839404142434445&#x2F;&#x2F; 防止不必要的重新渲染const ExpensiveComponent &#x3D; React.memo((&amp;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:56:16.425Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="React">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="Vue">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>React与Vue中的重排重绘优化策略 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="React与Vue中的重排重绘优化策略"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          13k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          113 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">React与Vue中的重排重绘优化策略</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="React与Vue中的重排重绘优化策略"><a href="#React与Vue中的重排重绘优化策略" class="headerlink" title="React与Vue中的重排重绘优化策略"></a>React与Vue中的重排重绘优化策略</h1><h2 id="一、React中的重排重绘优化"><a href="#一、React中的重排重绘优化" class="headerlink" title="一、React中的重排重绘优化"></a>一、React中的重排重绘优化</h2><h3 id="1-组件级渲染优化"><a href="#1-组件级渲染优化" class="headerlink" title="1. 组件级渲染优化"></a>1. 组件级渲染优化</h3><h4 id="1-React-memo与props比较"><a href="#1-React-memo与props比较" class="headerlink" title="(1) React.memo与props比较"></a>(1) React.memo与props比较</h4><figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-comment">// 防止不必要的重新渲染</span><br><span class="hljs-keyword">const</span> <span class="hljs-title class_">ExpensiveComponent</span> = <span class="hljs-title class_">React</span>.<span class="hljs-title function_">memo</span>(<span class="hljs-function">(<span class="hljs-params">&#123; data, onUpdate &#125;</span>) =&gt;</span> &#123;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;ExpensiveComponent rendered&#x27;</span>); <span class="hljs-comment">// 仅在props真正变化时打印</span><br>  <br>  <span class="hljs-keyword">return</span> (<br>    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;expensive-content&quot;</span>&gt;</span></span><br><span class="language-xml">      <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>&#123;data.title&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span></span><br><span class="language-xml">      <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>&#123;data.description&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></span><br><span class="language-xml">      <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">&#123;()</span> =&gt;</span> onUpdate(data.id)&#125;&gt;Update<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span><br><span class="language-xml">    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span><br>  );<br>&#125;, <span class="hljs-function">(<span class="hljs-params">prevProps, nextProps</span>) =&gt;</span> &#123;<br>  <span class="hljs-comment">// 自定义比较逻辑，只比较关键属性</span><br>  <span class="hljs-keyword">return</span> prevProps.<span class="hljs-property">data</span>.<span class="hljs-property">id</span> === nextProps.<span class="hljs-property">data</span>.<span class="hljs-property">id</span> &amp;&amp; <br>         prevProps.<span class="hljs-property">data</span>.<span class="hljs-property">version</span> === nextProps.<span class="hljs-property">data</span>.<span class="hljs-property">version</span>;<br>&#125;);<br><br><span class="hljs-comment">// 使用useCallback稳定函数引用</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">ParentComponent</span> = (<span class="hljs-params"></span>) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> [items, setItems] = <span class="hljs-title function_">useState</span>([]);<br>  <span class="hljs-keyword">const</span> [filter, setFilter] = <span class="hljs-title function_">useState</span>(<span class="hljs-string">&#x27;&#x27;</span>);<br>  <br>  <span class="hljs-comment">// 稳定的回调函数，避免子组件因引用变化而重渲染</span><br>  <span class="hljs-keyword">const</span> handleUpdate = <span class="hljs-title function_">useCallback</span>(<span class="hljs-function">(<span class="hljs-params">id</span>) =&gt;</span> &#123;<br>    <span class="hljs-title function_">setItems</span>(<span class="hljs-function"><span class="hljs-params">prev</span> =&gt;</span> prev.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> <br>      item.<span class="hljs-property">id</span> === id ? &#123; ...item, <span class="hljs-attr">updated</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() &#125; : item<br>    ));<br>  &#125;, []); <span class="hljs-comment">// 空依赖数组确保引用稳定</span><br>  <br>  <span class="hljs-keyword">const</span> filteredItems = <span class="hljs-title function_">useMemo</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-keyword">return</span> items.<span class="hljs-title function_">filter</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> item.<span class="hljs-property">name</span>.<span class="hljs-title function_">includes</span>(filter));<br>  &#125;, [items, filter]);<br>  <br>  <span class="hljs-keyword">return</span> (<br>    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span></span><br><span class="language-xml">      &#123;filteredItems.map(item =&gt; (</span><br><span class="language-xml">        <span class="hljs-tag">&lt;<span class="hljs-name">ExpensiveComponent</span> </span></span><br><span class="hljs-tag"><span class="language-xml">          <span class="hljs-attr">key</span>=<span class="hljs-string">&#123;item.id&#125;</span></span></span><br><span class="hljs-tag"><span class="language-xml">          <span class="hljs-attr">data</span>=<span class="hljs-string">&#123;item&#125;</span></span></span><br><span class="hljs-tag"><span class="language-xml">          <span class="hljs-attr">onUpdate</span>=<span class="hljs-string">&#123;handleUpdate&#125;</span></span></span><br><span class="hljs-tag"><span class="language-xml">        /&gt;</span></span><br><span class="language-xml">      ))&#125;</span><br><span class="language-xml">    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span><br>  );<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-useMemo缓存计算结果"><a href="#2-useMemo缓存计算结果" class="headerlink" title="(2) useMemo缓存计算结果"></a>(2) useMemo缓存计算结果</h4><figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-keyword">const</span> <span class="hljs-title function_">DataVisualization</span> = (<span class="hljs-params">&#123; rawData, config &#125;</span>) =&gt; &#123;<br>  <span class="hljs-comment">// 避免每次渲染都进行昂贵的数据处理</span><br>  <span class="hljs-keyword">const</span> processedData = <span class="hljs-title function_">useMemo</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">time</span>(<span class="hljs-string">&#x27;Data processing&#x27;</span>);<br>    <span class="hljs-keyword">const</span> result = rawData<br>      .<span class="hljs-title function_">filter</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> item.<span class="hljs-property">value</span> &gt; config.<span class="hljs-property">minValue</span>)<br>      .<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> (&#123;<br>        ...item,<br>        <span class="hljs-attr">processedValue</span>: item.<span class="hljs-property">value</span> * config.<span class="hljs-property">multiplier</span><br>      &#125;));<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">timeEnd</span>(<span class="hljs-string">&#x27;Data processing&#x27;</span>);<br>    <span class="hljs-keyword">return</span> result;<br>  &#125;, [rawData, config.<span class="hljs-property">minValue</span>, config.<span class="hljs-property">multiplier</span>]);<br>  <br>  <span class="hljs-comment">// 缓存复杂的样式对象</span><br>  <span class="hljs-keyword">const</span> chartStyle = <span class="hljs-title function_">useMemo</span>(<span class="hljs-function">() =&gt;</span> (&#123;<br>    <span class="hljs-attr">width</span>: <span class="hljs-string">&#x27;100%&#x27;</span>,<br>    <span class="hljs-attr">height</span>: <span class="hljs-string">&#x27;400px&#x27;</span>,<br>    <span class="hljs-attr">position</span>: <span class="hljs-string">&#x27;relative&#x27;</span>,<br>    <span class="hljs-attr">contain</span>: <span class="hljs-string">&#x27;layout paint&#x27;</span> <span class="hljs-comment">// 限制重排重绘范围</span><br>  &#125;), []);<br>  <br>  <span class="hljs-keyword">return</span> (<br>    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&#123;chartStyle&#125;</span>&gt;</span></span><br><span class="language-xml">      <span class="hljs-tag">&lt;<span class="hljs-name">ChartComponent</span> <span class="hljs-attr">data</span>=<span class="hljs-string">&#123;processedData&#125;</span> /&gt;</span></span><br><span class="language-xml">    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span><br>  );<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-列表渲染优化"><a href="#2-列表渲染优化" class="headerlink" title="2. 列表渲染优化"></a>2. 列表渲染优化</h3><figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-comment">// 虚拟滚动实现 - 优化大数据列表渲染</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">VirtualList</span> = (<span class="hljs-params">&#123; items, itemHeight = <span class="hljs-number">50</span> &#125;</span>) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> containerRef = <span class="hljs-title function_">useRef</span>(<span class="hljs-literal">null</span>);<br>  <span class="hljs-keyword">const</span> [visibleRange, setVisibleRange] = <span class="hljs-title function_">useState</span>(&#123; <span class="hljs-attr">start</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">end</span>: <span class="hljs-number">0</span> &#125;);<br>  <br>  <span class="hljs-comment">// 防抖滚动处理，减少重排频率</span><br>  <span class="hljs-keyword">const</span> handleScroll = <span class="hljs-title function_">useMemo</span>(<span class="hljs-function">() =&gt;</span> <br>    <span class="hljs-title function_">debounce</span>(<span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> &#123;<br>      <span class="hljs-keyword">const</span> scrollTop = e.<span class="hljs-property">target</span>.<span class="hljs-property">scrollTop</span>;<br>      <span class="hljs-keyword">const</span> containerHeight = containerRef.<span class="hljs-property">current</span>.<span class="hljs-property">clientHeight</span>;<br>      <br>      <span class="hljs-keyword">const</span> start = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">floor</span>(scrollTop / itemHeight);<br>      <span class="hljs-keyword">const</span> visibleCount = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">ceil</span>(containerHeight / itemHeight);<br>      <span class="hljs-keyword">const</span> end = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(start + visibleCount + <span class="hljs-number">2</span>, items.<span class="hljs-property">length</span>); <span class="hljs-comment">// +2缓冲区</span><br>      <br>      <span class="hljs-title function_">setVisibleRange</span>(&#123; start, end &#125;);<br>    &#125;, <span class="hljs-number">16</span>), <span class="hljs-comment">// 约60fps的防抖时间</span><br>    [itemHeight, items.<span class="hljs-property">length</span>]<br>  );<br>  <br>  <span class="hljs-keyword">const</span> visibleItems = items.<span class="hljs-title function_">slice</span>(visibleRange.<span class="hljs-property">start</span>, visibleRange.<span class="hljs-property">end</span>);<br>  <br>  <span class="hljs-keyword">return</span> (<br>    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> </span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">ref</span>=<span class="hljs-string">&#123;containerRef&#125;</span></span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;virtual-list-container&quot;</span></span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">onScroll</span>=<span class="hljs-string">&#123;handleScroll&#125;</span></span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">style</span>=<span class="hljs-string">&#123;&#123;</span> </span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">height:</span> &#x27;<span class="hljs-attr">400px</span>&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">overflow:</span> &#x27;<span class="hljs-attr">auto</span>&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">contain:</span> &#x27;<span class="hljs-attr">strict</span>&#x27; // <span class="hljs-attr">严格限制重排重绘</span></span></span><br><span class="hljs-tag"><span class="language-xml">      &#125;&#125;</span></span><br><span class="hljs-tag"><span class="language-xml">    &gt;</span></span><br><span class="language-xml">      <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&#123;&#123;</span> <span class="hljs-attr">height:</span> <span class="hljs-attr">items.length</span> * <span class="hljs-attr">itemHeight</span>, <span class="hljs-attr">position:</span> &#x27;<span class="hljs-attr">relative</span>&#x27; &#125;&#125;&gt;</span></span><br><span class="language-xml">        &#123;visibleItems.map((item, index) =&gt; (</span><br><span class="language-xml">          <span class="hljs-tag">&lt;<span class="hljs-name">div</span></span></span><br><span class="hljs-tag"><span class="language-xml">            <span class="hljs-attr">key</span>=<span class="hljs-string">&#123;item.id&#125;</span></span></span><br><span class="hljs-tag"><span class="language-xml">            <span class="hljs-attr">style</span>=<span class="hljs-string">&#123;&#123;</span></span></span><br><span class="hljs-tag"><span class="language-xml">              <span class="hljs-attr">position:</span> &#x27;<span class="hljs-attr">absolute</span>&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">              <span class="hljs-attr">top:</span> `$&#123;(<span class="hljs-attr">visibleRange.start</span> + <span class="hljs-attr">index</span>) * <span class="hljs-attr">itemHeight</span>&#125;<span class="hljs-attr">px</span>`,</span></span><br><span class="hljs-tag"><span class="language-xml">              <span class="hljs-attr">width:</span> &#x27;<span class="hljs-attr">100</span>%&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">              <span class="hljs-attr">height:</span> `$&#123;<span class="hljs-attr">itemHeight</span>&#125;<span class="hljs-attr">px</span>`,</span></span><br><span class="hljs-tag"><span class="language-xml">              <span class="hljs-attr">willChange:</span> &#x27;<span class="hljs-attr">transform</span>&#x27;, // <span class="hljs-attr">提升为合成层</span></span></span><br><span class="hljs-tag"><span class="language-xml">              <span class="hljs-attr">contain:</span> &#x27;<span class="hljs-attr">paint</span>&#x27; // <span class="hljs-attr">限制重绘范围</span></span></span><br><span class="hljs-tag"><span class="language-xml">            &#125;&#125;</span></span><br><span class="hljs-tag"><span class="language-xml">          &gt;</span></span><br><span class="language-xml">            <span class="hljs-tag">&lt;<span class="hljs-name">ItemComponent</span> <span class="hljs-attr">item</span>=<span class="hljs-string">&#123;item&#125;</span> /&gt;</span></span><br><span class="language-xml">          <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span><br><span class="language-xml">        ))&#125;</span><br><span class="language-xml">      <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span><br><span class="language-xml">    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span><br>  );<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-CSS与动画优化"><a href="#3-CSS与动画优化" class="headerlink" title="3. CSS与动画优化"></a>3. CSS与动画优化</h3><figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs jsx"><span class="hljs-comment">// 使用合成属性避免重排</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">AnimatedCard</span> = (<span class="hljs-params">&#123; isVisible, position &#125;</span>) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> animatedStyle = <span class="hljs-title function_">useMemo</span>(<span class="hljs-function">() =&gt;</span> (&#123;<br>    <span class="hljs-attr">transform</span>: <span class="hljs-string">`translate3d(<span class="hljs-subst">$&#123;position.x&#125;</span>px, <span class="hljs-subst">$&#123;position.y&#125;</span>px, 0)`</span>,<br>    <span class="hljs-attr">opacity</span>: isVisible ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>,<br>    <span class="hljs-attr">transition</span>: <span class="hljs-string">&#x27;transform 0.3s ease, opacity 0.3s ease&#x27;</span>,<br>    <span class="hljs-attr">willChange</span>: <span class="hljs-string">&#x27;transform, opacity&#x27;</span>, <span class="hljs-comment">// 提示浏览器优化</span><br>    <span class="hljs-attr">contain</span>: <span class="hljs-string">&#x27;paint&#x27;</span> <span class="hljs-comment">// 限制重绘范围</span><br>  &#125;), [isVisible, position]);<br>  <br>  <span class="hljs-keyword">return</span> <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&#123;animatedStyle&#125;</span>&gt;</span>Card Content<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>;<br>&#125;;<br><br><span class="hljs-comment">// 使用React Portal避免父组件重排影响</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">Modal</span> = (<span class="hljs-params">&#123; children, isOpen &#125;</span>) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> [mounted, setMounted] = <span class="hljs-title function_">useState</span>(<span class="hljs-literal">false</span>);<br>  <br>  <span class="hljs-title function_">useEffect</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-title function_">setMounted</span>(<span class="hljs-literal">true</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">setMounted</span>(<span class="hljs-literal">false</span>);<br>  &#125;, []);<br>  <br>  <span class="hljs-keyword">if</span> (!mounted) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>  <br>  <span class="hljs-keyword">return</span> <span class="hljs-title function_">createPortal</span>(<br>    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> </span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;modal-overlay&quot;</span></span></span><br><span class="hljs-tag"><span class="language-xml">      <span class="hljs-attr">style</span>=<span class="hljs-string">&#123;&#123;</span></span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">position:</span> &#x27;<span class="hljs-attr">fixed</span>&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">top:</span> <span class="hljs-attr">0</span>,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">left:</span> <span class="hljs-attr">0</span>,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">right:</span> <span class="hljs-attr">0</span>,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">bottom:</span> <span class="hljs-attr">0</span>,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">backgroundColor:</span> &#x27;<span class="hljs-attr">rgba</span>(<span class="hljs-attr">0</span>,<span class="hljs-attr">0</span>,<span class="hljs-attr">0</span>,<span class="hljs-attr">0.5</span>)&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">display:</span> <span class="hljs-attr">isOpen</span> ? &#x27;<span class="hljs-attr">flex</span>&#x27; <span class="hljs-attr">:</span> &#x27;<span class="hljs-attr">none</span>&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">alignItems:</span> &#x27;<span class="hljs-attr">center</span>&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">justifyContent:</span> &#x27;<span class="hljs-attr">center</span>&#x27;,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">zIndex:</span> <span class="hljs-attr">1000</span>,</span></span><br><span class="hljs-tag"><span class="language-xml">        <span class="hljs-attr">willChange:</span> &#x27;<span class="hljs-attr">opacity</span>&#x27; // <span class="hljs-attr">合成层优化</span></span></span><br><span class="hljs-tag"><span class="language-xml">      &#125;&#125;</span></span><br><span class="hljs-tag"><span class="language-xml">    &gt;</span></span><br><span class="language-xml">      <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;modal-content&quot;</span>&gt;</span></span><br><span class="language-xml">        &#123;children&#125;</span><br><span class="language-xml">      <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span><br><span class="language-xml">    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>,<br>    <span class="hljs-variable language_">document</span>.<span class="hljs-property">body</span><br>  );<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="二、Vue中的重排重绘优化"><a href="#二、Vue中的重排重绘优化" class="headerlink" title="二、Vue中的重排重绘优化"></a>二、Vue中的重排重绘优化</h2><h3 id="1-响应式系统优化"><a href="#1-响应式系统优化" class="headerlink" title="1. 响应式系统优化"></a>1. 响应式系统优化</h3><h4 id="1-computed属性缓存"><a href="#1-computed属性缓存" class="headerlink" title="(1) computed属性缓存"></a>(1) computed属性缓存</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;template&gt;<br>  &lt;div class=&quot;data-container&quot;&gt;<br>    &lt;!-- 使用v-once处理静态内容 --&gt;<br>    &lt;header v-once class=&quot;static-header&quot;&gt;<br>      &lt;h1&gt;数据看板&lt;/h1&gt;<br>      &lt;p&gt;最后更新: &#123;&#123; formattedUpdateTime &#125;&#125;&lt;/p&gt;<br>    &lt;/header&gt;<br>    <br>    &lt;!-- 使用v-show替代v-if用于频繁切换 --&gt;<br>    &lt;div v-show=&quot;isLoading&quot; class=&quot;loading-skeleton&quot;&gt;<br>      &lt;div v-for=&quot;n in skeletonCount&quot; :key=&quot;n&quot; class=&quot;skeleton-item&quot;&gt;&lt;/div&gt;<br>    &lt;/div&gt;<br>    <br>    &lt;!-- 条件渲染，减少不必要的DOM操作 --&gt;<br>    &lt;div v-if=&quot;!isLoading &amp;&amp; items.length&quot;&gt;<br>      &lt;div <br>        v-for=&quot;item in filteredItems&quot; <br>        :key=&quot;item.id&quot;<br>        class=&quot;data-item&quot;<br>        :style=&quot;&#123; contain: &#x27;paint&#x27; &#125;&quot;<br>      &gt;<br>        &lt;item-display :item=&quot;item&quot; /&gt;<br>      &lt;/div&gt;<br>    &lt;/div&gt;<br>  &lt;/div&gt;<br>&lt;/template&gt;<br><br>&lt;script setup&gt;<br>import &#123; ref, computed, watch, onMounted &#125; from &#x27;vue&#x27;;<br><br>const rawData = ref([]);<br>const filters = ref(&#123; search: &#x27;&#x27;, category: &#x27;&#x27; &#125;);<br>const isLoading = ref(true);<br><br>// computed自动缓存，仅在依赖变化时重新计算<br>const filteredItems = computed(() =&gt; &#123;<br>  console.time(&#x27;Filter computation&#x27;);<br>  const result = rawData.value.filter(item =&gt; &#123;<br>    const matchesSearch = !filters.value.search || <br>      item.name.toLowerCase().includes(filters.value.search.toLowerCase());<br>    const matchesCategory = !filters.value.category || <br>      item.category === filters.value.category;<br>    <br>    return matchesSearch &amp;&amp; matchesCategory;<br>  &#125;);<br>  console.timeEnd(&#x27;Filter computation&#x27;);<br>  return result;<br>&#125;);<br><br>// 使用watch精确控制副作用<br>watch(<br>  [() =&gt; rawData.value.length, () =&gt; filters.value],<br>  ([newLength], [oldLength]) =&gt; &#123;<br>    if (newLength !== oldLength) &#123;<br>      isLoading.value = false;<br>    &#125;<br>  &#125;,<br>  &#123; deep: true &#125;<br>);<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-Vue-3响应式优化"><a href="#2-Vue-3响应式优化" class="headerlink" title="(2) Vue 3响应式优化"></a>(2) Vue 3响应式优化</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;script setup&gt;<br>import &#123; ref, shallowRef, reactive, readonly, computed &#125; from &#x27;vue&#x27;;<br><br>// 使用shallowRef减少深层响应式开销<br>const largeDataset = shallowRef([]);<br><br>// 使用reactive创建选择性响应式对象<br>const uiState = reactive(&#123;<br>  selectedId: null,<br>  sortBy: &#x27;name&#x27;,<br>  sortOrder: &#x27;asc&#x27;,<br>  scrollPosition: 0<br>&#125;);<br><br>// 只读配置，避免意外修改<br>const chartConfig = readonly(&#123;<br>  type: &#x27;bar&#x27;,<br>  options: &#123;<br>    animation: false, // 禁用动画减少重绘<br>    responsive: true,<br>    maintainAspectRatio: false<br>  &#125;<br>&#125;);<br><br>// 计算属性缓存复杂逻辑<br>const summaryStats = computed(() =&gt; &#123;<br>  const values = largeDataset.value.map(item =&gt; item.value);<br>  return &#123;<br>    total: values.reduce((sum, val) =&gt; sum + val, 0),<br>    average: values.length ? values.reduce((sum, val) =&gt; sum + val, 0) / values.length : 0,<br>    max: Math.max(...values),<br>    min: Math.min(...values)<br>  &#125;;<br>&#125;);<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-组件级别优化"><a href="#2-组件级别优化" class="headerlink" title="2. 组件级别优化"></a>2. 组件级别优化</h3><h4 id="1-缓存组件"><a href="#1-缓存组件" class="headerlink" title="(1) 缓存组件"></a>(1) <keep-alive>缓存组件</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;template&gt;<br>  &lt;div class=&quot;dashboard&quot;&gt;<br>    &lt;nav-tabs v-model=&quot;activeTab&quot; /&gt;<br>    <br>    &lt;!-- 缓存切换的组件，避免重复渲染 --&gt;<br>    &lt;keep-alive :include=&quot;[&#x27;OverviewTab&#x27;, &#x27;AnalyticsTab&#x27;]&quot; :max=&quot;3&quot;&gt;<br>      &lt;component :is=&quot;currentComponent&quot; :key=&quot;activeTab&quot; /&gt;<br>    &lt;/keep-alive&gt;<br>    <br>    &lt;!-- 使用v-memo优化列表渲染（Vue 3.2+） --&gt;<br>    &lt;div v-for=&quot;item in items&quot; :key=&quot;item.id&quot; v-memo=&quot;[item.updated, item.selected]&quot;&gt;<br>      &lt;expensive-list-item :item=&quot;item&quot; /&gt;<br>    &lt;/div&gt;<br>  &lt;/div&gt;<br>&lt;/template&gt;<br><br>&lt;script setup&gt;<br>import &#123; ref, computed &#125; from &#x27;vue&#x27;;<br><br>const activeTab = ref(&#x27;overview&#x27;);<br>const tabs = &#123;<br>  overview: () =&gt; import(&#x27;./OverviewTab.vue&#x27;),<br>  analytics: () =&gt; import(&#x27;./AnalyticsTab.vue&#x27;),<br>  settings: () =&gt; import(&#x27;./SettingsTab.vue&#x27;)<br>&#125;;<br><br>const currentComponent = computed(() =&gt; tabs[activeTab.value]);<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-异步组件与懒加载"><a href="#2-异步组件与懒加载" class="headerlink" title="(2) 异步组件与懒加载"></a>(2) 异步组件与懒加载</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;script setup&gt;<br>import &#123; defineAsyncComponent, Suspense &#125; from &#x27;vue&#x27;;<br><br>// 懒加载复杂组件<br>const HeavyChart = defineAsyncComponent(&#123;<br>  loader: () =&gt; import(&#x27;./HeavyChart.vue&#x27;),<br>  loadingComponent: LoadingSpinner,<br>  errorComponent: ErrorComponent,<br>  delay: 200, // 延迟显示加载状态<br>  timeout: 3000 // 超时时间<br>&#125;);<br><br>// 使用Suspense处理异步组件加载<br>const AsyncDashboard = () =&gt; (<br>  &lt;Suspense&gt;<br>    &#123;&#123;<br>      default: () =&gt; &lt;HeavyChart /&gt;,<br>      fallback: () =&gt; &lt;LoadingSpinner /&gt;<br>    &#125;&#125;<br>  &lt;/Suspense&gt;<br>);<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-虚拟滚动实现（Vue-3版本）"><a href="#3-虚拟滚动实现（Vue-3版本）" class="headerlink" title="3. 虚拟滚动实现（Vue 3版本）"></a>3. 虚拟滚动实现（Vue 3版本）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><code class="hljs vue">&lt;template&gt;<br>  &lt;div <br>    ref=&quot;containerRef&quot;<br>    class=&quot;virtual-scroll-container&quot;<br>    @scroll.passive=&quot;handleScroll&quot; &lt;!-- .passive修饰符提升滚动性能 --&gt;<br>    :style=&quot;&#123; contain: &#x27;strict&#x27; &#125;&quot;<br>  &gt;<br>    &lt;div :style=&quot;&#123; height: totalHeight + &#x27;px&#x27;, position: &#x27;relative&#x27; &#125;&quot;&gt;<br>      &lt;div<br>        v-for=&quot;(item, index) in visibleItems&quot;<br>        :key=&quot;item.id&quot;<br>        class=&quot;virtual-item&quot;<br>        :style=&quot;getItemStyle(index)&quot;<br>      &gt;<br>        &lt;data-item :item=&quot;item&quot; /&gt;<br>      &lt;/div&gt;<br>    &lt;/div&gt;<br>  &lt;/div&gt;<br>&lt;/template&gt;<br><br>&lt;script setup&gt;<br>import &#123; ref, computed, onMounted, onUnmounted &#125; from &#x27;vue&#x27;;<br><br>const props = defineProps(&#123;<br>  items: Array,<br>  itemHeight: &#123; type: Number, default: 50 &#125;,<br>  buffer: &#123; type: Number, default: 2 &#125;<br>&#125;);<br><br>const containerRef = ref(null);<br>const scrollTop = ref(0);<br><br>// 计算可见范围<br>const visibleRange = computed(() =&gt; &#123;<br>  if (!containerRef.value) return &#123; start: 0, end: 0 &#125;;<br>  <br>  const containerHeight = containerRef.value.clientHeight;<br>  const start = Math.floor(scrollTop.value / props.itemHeight);<br>  const end = Math.min(<br>    start + Math.ceil(containerHeight / props.itemHeight) + props.buffer * 2,<br>    props.items.length<br>  );<br>  <br>  return &#123; start, end &#125;;<br>&#125;);<br><br>// 可见项目<br>const visibleItems = computed(() =&gt; &#123;<br>  return props.items.slice(visibleRange.value.start, visibleRange.value.end);<br>&#125;);<br><br>// 总高度<br>const totalHeight = computed(() =&gt; props.items.length * props.itemHeight);<br><br>// 获取项目样式<br>const getItemStyle = (index) =&gt; &#123;<br>  return &#123;<br>    position: &#x27;absolute&#x27;,<br>    top: `$&#123;(visibleRange.value.start + index) * props.itemHeight&#125;px`,<br>    width: &#x27;100%&#x27;,<br>    height: `$&#123;props.itemHeight&#125;px`,<br>    willChange: &#x27;transform&#x27;, // 提升为合成层<br>    contain: &#x27;paint&#x27; // 限制重绘范围<br>  &#125;;<br>&#125;;<br><br>// 防抖滚动处理<br>let animationFrameId = null;<br>const handleScroll = (e) =&gt; &#123;<br>  scrollTop.value = e.target.scrollTop;<br>  <br>  if (animationFrameId) &#123;<br>    cancelAnimationFrame(animationFrameId);<br>  &#125;<br>  <br>  animationFrameId = requestAnimationFrame(() =&gt; &#123;<br>    // 批量更新逻辑<br>    animationFrameId = null;<br>  &#125;);<br>&#125;;<br><br>onUnmounted(() =&gt; &#123;<br>  if (animationFrameId) &#123;<br>    cancelAnimationFrame(animationFrameId);<br>  &#125;<br>&#125;);<br>&lt;/script&gt;<br></code></pre></td></tr></table></figure>
+
+<h2 id="三、框架通用优化策略"><a href="#三、框架通用优化策略" class="headerlink" title="三、框架通用优化策略"></a>三、框架通用优化策略</h2><h3 id="1-CSS优化"><a href="#1-CSS优化" class="headerlink" title="1. CSS优化"></a>1. CSS优化</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs css"><span class="hljs-comment">/* 通用优化策略 */</span><br><span class="hljs-selector-class">.data-intensive-container</span> &#123;<br>  <span class="hljs-attribute">contain</span>: layout paint; <span class="hljs-comment">/* 限制重排重绘范围 */</span><br>  <span class="hljs-attribute">will-change</span>: scroll-position; <span class="hljs-comment">/* 提示滚动优化 */</span><br>&#125;<br><br><span class="hljs-comment">/* 合成层优化 */</span><br><span class="hljs-selector-class">.optimized-animation</span> &#123;<br>  <span class="hljs-attribute">transform</span>: <span class="hljs-built_in">translateZ</span>(<span class="hljs-number">0</span>); <span class="hljs-comment">/* 强制提升为合成层 */</span><br>  <span class="hljs-comment">/* 或使用 */</span><br>  <span class="hljs-attribute">will-change</span>: transform, opacity;<br>&#125;<br><br><span class="hljs-comment">/* 避免布局抖动 */</span><br><span class="hljs-selector-class">.avoid-layout-thrashing</span> &#123;<br>  <span class="hljs-attribute">contain</span>: style; <span class="hljs-comment">/* 限制样式变化影响 */</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-Web-Worker集成"><a href="#2-Web-Worker集成" class="headerlink" title="2. Web Worker集成"></a>2. Web Worker集成</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 通用Worker处理器</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">WorkerPool</span> &#123;<br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">workerScript, size = <span class="hljs-number">4</span></span>) &#123;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">workers</span> = [];<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">taskQueue</span> = [];<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">size</span> = size;<br>    <br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; size; i++) &#123;<br>      <span class="hljs-keyword">const</span> worker = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Worker</span>(workerScript);<br>      worker.<span class="hljs-property">onmessage</span> = <span class="hljs-variable language_">this</span>.<span class="hljs-property">handleResponse</span>.<span class="hljs-title function_">bind</span>(<span class="hljs-variable language_">this</span>, worker);<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">workers</span>.<span class="hljs-title function_">push</span>(&#123; worker, <span class="hljs-attr">busy</span>: <span class="hljs-literal">false</span> &#125;);<br>    &#125;<br>  &#125;<br>  <br>  <span class="hljs-title function_">handleResponse</span>(<span class="hljs-params">worker, event</span>) &#123;<br>    <span class="hljs-keyword">const</span> &#123; taskId, result &#125; = event.<span class="hljs-property">data</span>;<br>    <span class="hljs-keyword">const</span> task = <span class="hljs-variable language_">this</span>.<span class="hljs-property">taskQueue</span>.<span class="hljs-title function_">find</span>(<span class="hljs-function"><span class="hljs-params">t</span> =&gt;</span> t.<span class="hljs-property">id</span> === taskId);<br>    <span class="hljs-keyword">if</span> (task) &#123;<br>      task.<span class="hljs-title function_">resolve</span>(result);<br>      worker.<span class="hljs-property">busy</span> = <span class="hljs-literal">false</span>;<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">processQueue</span>();<br>    &#125;<br>  &#125;<br>  <br>  <span class="hljs-title function_">process</span>(<span class="hljs-params">operation, data</span>) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> &#123;<br>      <span class="hljs-keyword">const</span> taskId = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>().<span class="hljs-title function_">toString</span>(<span class="hljs-number">36</span>).<span class="hljs-title function_">substr</span>(<span class="hljs-number">2</span>, <span class="hljs-number">9</span>);<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">taskQueue</span>.<span class="hljs-title function_">push</span>(&#123; <span class="hljs-attr">id</span>: taskId, data, operation, resolve &#125;);<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">processQueue</span>();<br>    &#125;);<br>  &#125;<br>  <br>  <span class="hljs-title function_">processQueue</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">const</span> idleWorker = <span class="hljs-variable language_">this</span>.<span class="hljs-property">workers</span>.<span class="hljs-title function_">find</span>(<span class="hljs-function"><span class="hljs-params">w</span> =&gt;</span> !w.<span class="hljs-property">busy</span>);<br>    <span class="hljs-keyword">const</span> pendingTask = <span class="hljs-variable language_">this</span>.<span class="hljs-property">taskQueue</span>.<span class="hljs-title function_">find</span>(<span class="hljs-function"><span class="hljs-params">t</span> =&gt;</span> !t.<span class="hljs-property">processing</span>);<br>    <br>    <span class="hljs-keyword">if</span> (idleWorker &amp;&amp; pendingTask) &#123;<br>      pendingTask.<span class="hljs-property">processing</span> = <span class="hljs-literal">true</span>;<br>      idleWorker.<span class="hljs-property">busy</span> = <span class="hljs-literal">true</span>;<br>      idleWorker.<span class="hljs-property">worker</span>.<span class="hljs-title function_">postMessage</span>(&#123;<br>        <span class="hljs-attr">taskId</span>: pendingTask.<span class="hljs-property">id</span>,<br>        <span class="hljs-attr">data</span>: pendingTask.<span class="hljs-property">data</span>,<br>        <span class="hljs-attr">operation</span>: pendingTask.<span class="hljs-property">operation</span><br>      &#125;);<br>    &#125;<br>  &#125;<br>&#125;<br><br><span class="hljs-comment">// 使用示例</span><br><span class="hljs-keyword">const</span> processor = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WorkerPool</span>(<span class="hljs-string">&#x27;/data-processor.js&#x27;</span>);<br><br><span class="hljs-comment">// 在React/Vue组件中</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">handleLargeData</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">data</span>) =&gt; &#123;<br>  <span class="hljs-title function_">setLoading</span>(<span class="hljs-literal">true</span>);<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> processor.<span class="hljs-title function_">process</span>(<span class="hljs-string">&#x27;sort&#x27;</span>, data);<br>    <span class="hljs-title function_">setProcessedData</span>(result);<br>  &#125; <span class="hljs-keyword">finally</span> &#123;<br>    <span class="hljs-title function_">setLoading</span>(<span class="hljs-literal">false</span>);<br>  &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>React和Vue虽然有不同的响应式机制，但在优化重排重绘方面有很多共同策略：</p>
+<ol>
+<li><strong>React</strong>：利用Fiber架构的协调机制，通过React.memo、useMemo、useCallback等API精确控制渲染</li>
+<li><strong>Vue</strong>：利用响应式系统的细粒度追踪，通过computed、v-once、keep-alive等优化渲染</li>
+</ol>
+<p>两个框架都支持虚拟滚动、Web Workers、CSS优化等通用技术。选择哪种框架主要取决于团队熟悉度和项目需求，优化思路是相通的。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" class="category-chain-item">性能优化</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/React/">#React</a>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/Vue/">#Vue</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>React与Vue中的重排重绘优化策略</div>
+      <div>https://zjw93615.github.io/2025/12/06/性能优化/重排/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5/" title="缓存策略">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">缓存策略</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/React_Vue/React%20&amp;%20Vue%20%E8%B5%84%E6%B7%B1%E5%B7%A5%E7%A8%8B%E5%B8%88%E9%9D%A2%E8%AF%95%E9%A2%98/" title="React &amp; Vue 资深工程师面试题（附详细解答）">
+                        <span class="hidden-mobile">React &amp; Vue 资深工程师面试题（附详细解答）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

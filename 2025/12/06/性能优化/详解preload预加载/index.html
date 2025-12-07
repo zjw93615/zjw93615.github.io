@@ -1,0 +1,756 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="详解preload预加载：用法、场景与避坑指南preload 是浏览器提供的资源预加载指令，核心作用是提前加载当前页面的关键资源（如首屏字体、核心图片、核心JS&#x2F;CSS），且不会阻塞页面渲染流程，同时能指定资源类型、优先级，让浏览器更高效地处理资源。它是首页渲染优化中「精准提升关键资源加载速度」的核心手段，但需严格控制使用范围，避免滥用。 一、preload核心语法与关键属性1. 基础语">
+<meta property="og:type" content="article">
+<meta property="og:title" content="详解preload预加载：用法、场景与避坑指南">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/%E8%AF%A6%E8%A7%A3preload%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="详解preload预加载：用法、场景与避坑指南preload 是浏览器提供的资源预加载指令，核心作用是提前加载当前页面的关键资源（如首屏字体、核心图片、核心JS&#x2F;CSS），且不会阻塞页面渲染流程，同时能指定资源类型、优先级，让浏览器更高效地处理资源。它是首页渲染优化中「精准提升关键资源加载速度」的核心手段，但需严格控制使用范围，避免滥用。 一、preload核心语法与关键属性1. 基础语">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:36:13.642Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="性能优化">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>详解preload预加载：用法、场景与避坑指南 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="详解preload预加载：用法、场景与避坑指南"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          39 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">详解preload预加载：用法、场景与避坑指南</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="详解preload预加载：用法、场景与避坑指南"><a href="#详解preload预加载：用法、场景与避坑指南" class="headerlink" title="详解preload预加载：用法、场景与避坑指南"></a>详解preload预加载：用法、场景与避坑指南</h1><p><code>preload</code> 是浏览器提供的<strong>资源预加载指令</strong>，核心作用是提前加载当前页面的<strong>关键资源</strong>（如首屏字体、核心图片、核心JS&#x2F;CSS），且不会阻塞页面渲染流程，同时能指定资源类型、优先级，让浏览器更高效地处理资源。它是首页渲染优化中「精准提升关键资源加载速度」的核心手段，但需严格控制使用范围，避免滥用。</p>
+<h2 id="一、preload核心语法与关键属性"><a href="#一、preload核心语法与关键属性" class="headerlink" title="一、preload核心语法与关键属性"></a>一、preload核心语法与关键属性</h2><h3 id="1-基础语法"><a href="#1-基础语法" class="headerlink" title="1. 基础语法"></a>1. 基础语法</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-tag">&lt;<span class="hljs-name">link</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preload&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;资源URL&quot;</span>  &lt;!<span class="hljs-attr">--</span> <span class="hljs-attr">必选</span>：<span class="hljs-attr">预加载资源的路径</span>（<span class="hljs-attr">绝对</span>/<span class="hljs-attr">相对</span>/<span class="hljs-attr">CDN</span>） <span class="hljs-attr">--</span>&gt;</span><br>  as=&quot;资源类型&quot;   <span class="hljs-comment">&lt;!-- 必选：指定资源类型，决定浏览器处理逻辑 --&gt;</span><br>  [crossorigin]   <span class="hljs-comment">&lt;!-- 可选：跨域资源（尤其字体）必须加 --&gt;</span><br>  [type=&quot;MIME类型&quot;] <span class="hljs-comment">&lt;!-- 可选：过滤不支持的资源类型，节省带宽 --&gt;</span><br>  [media=&quot;媒体查询&quot;] <span class="hljs-comment">&lt;!-- 可选：仅满足条件时预加载 --&gt;</span><br>  [onload=&quot;回调函数&quot;] <span class="hljs-comment">&lt;!-- 可选：资源加载完成后的处理 --&gt;</span><br>&gt;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-核心属性详解（重点！）"><a href="#2-核心属性详解（重点！）" class="headerlink" title="2. 核心属性详解（重点！）"></a>2. 核心属性详解（重点！）</h3><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>作用与取值</th>
+<th>注意事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>as</code></td>
+<td>定义资源类型，浏览器据此设置请求优先级、解析规则（<strong>缺省会导致预加载失效</strong>）</td>
+<td>常用取值：<code>script</code>（JS）、<code>style</code>（CSS）、<code>font</code>（字体）、<code>image</code>（图片）、<code>fetch</code>（接口数据）、<code>document</code>（HTML）等</td>
+</tr>
+<tr>
+<td><code>crossorigin</code></td>
+<td>声明跨域策略，字体资源<strong>即使同域也必须加</strong>（否则会重复加载）</td>
+<td>字体预加载固定写：<code>crossorigin=&quot;anonymous&quot;</code>（匿名跨域）</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>指定资源MIME类型，浏览器先检查是否支持该类型，不支持则跳过预加载</td>
+<td>如字体：<code>type=&quot;font/woff2&quot;</code>，图片：<code>type=&quot;image/webp&quot;</code></td>
+</tr>
+<tr>
+<td><code>media</code></td>
+<td>媒体查询（如<code>(min-width: 768px)</code>），仅匹配时才预加载</td>
+<td>适配移动端&#x2F;PC端，避免小屏加载大屏资源</td>
+</tr>
+<tr>
+<td><code>onload</code></td>
+<td>资源加载完成后的回调，用于执行后续逻辑（如启用预加载的CSS&#x2F;JS）</td>
+<td>避免重复绑定事件，建议加<code>this.onload=null</code></td>
+</tr>
+</tbody></table>
+<h2 id="二、preload典型使用场景（结合首页优化）"><a href="#二、preload典型使用场景（结合首页优化）" class="headerlink" title="二、preload典型使用场景（结合首页优化）"></a>二、preload典型使用场景（结合首页优化）</h2><h3 id="场景1：预加载首屏核心字体（解决FOIT-x2F-字体加载慢）"><a href="#场景1：预加载首屏核心字体（解决FOIT-x2F-字体加载慢）" class="headerlink" title="场景1：预加载首屏核心字体（解决FOIT&#x2F;字体加载慢）"></a>场景1：预加载首屏核心字体（解决FOIT&#x2F;字体加载慢）</h3><p>首页标题、导航等核心字体加载慢会导致文本闪烁&#x2F;不可见，用<code>preload</code>提前加载，配合<code>font-display: swap</code>优化体验：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-comment">&lt;!-- 预加载首屏核心字体（woff2格式） --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">link</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preload&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;/fonts/primary-font.woff2&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;font&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;font/woff2&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">crossorigin</span>=<span class="hljs-string">&quot;anonymous&quot;</span></span><br><span class="hljs-tag">&gt;</span><br><span class="hljs-comment">&lt;!-- 正常引用字体（复用预加载的资源，不会重复请求） --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="language-css"></span><br><span class="language-css">  <span class="hljs-keyword">@font-face</span> &#123;</span><br><span class="language-css">    <span class="hljs-attribute">font-family</span>: <span class="hljs-string">&#x27;PrimaryFont&#x27;</span>;</span><br><span class="language-css">    <span class="hljs-attribute">src</span>: <span class="hljs-built_in">url</span>(<span class="hljs-string">&#x27;/fonts/primary-font.woff2&#x27;</span>) <span class="hljs-built_in">format</span>(<span class="hljs-string">&#x27;woff2&#x27;</span>);</span><br><span class="language-css">    <span class="hljs-attribute">font-display</span>: swap; <span class="hljs-comment">/* 字体加载前显示系统字体，避免空白 */</span></span><br><span class="language-css">  &#125;</span><br><span class="language-css"></span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="场景2：预加载首屏关键图片（如banner图-x2F-主视觉图）"><a href="#场景2：预加载首屏关键图片（如banner图-x2F-主视觉图）" class="headerlink" title="场景2：预加载首屏关键图片（如banner图&#x2F;主视觉图）"></a>场景2：预加载首屏关键图片（如banner图&#x2F;主视觉图）</h3><p>首页banner图体积较大时，提前预加载可提升LCP（最大内容绘制）指标，结合<code>media</code>适配不同设备：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-comment">&lt;!-- 仅在大屏设备预加载高清banner，小屏加载小图（避免浪费带宽） --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">link</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preload&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;/images/home-banner-lg.webp&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;image&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">media</span>=<span class="hljs-string">&quot;(min-width: 768px)&quot;</span></span><br><span class="hljs-tag">&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">link</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preload&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;/images/home-banner-sm.webp&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;image&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">media</span>=<span class="hljs-string">&quot;(max-width: 767px)&quot;</span></span><br><span class="hljs-tag">&gt;</span><br><span class="hljs-comment">&lt;!-- 页面中正常使用图片 --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/images/home-banner-lg.webp&quot;</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;首页banner&quot;</span> <span class="hljs-attr">media</span>=<span class="hljs-string">&quot;(min-width: 768px)&quot;</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/images/home-banner-sm.webp&quot;</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;首页banner&quot;</span> <span class="hljs-attr">media</span>=<span class="hljs-string">&quot;(max-width: 767px)&quot;</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="场景3：预加载核心JS（首屏交互逻辑，比defer-x2F-async更提前）"><a href="#场景3：预加载核心JS（首屏交互逻辑，比defer-x2F-async更提前）" class="headerlink" title="场景3：预加载核心JS（首屏交互逻辑，比defer&#x2F;async更提前）"></a>场景3：预加载核心JS（首屏交互逻辑，比defer&#x2F;async更提前）</h3><p><code>preload</code>仅加载JS不执行，需手动触发执行，适合首屏必须但又不想阻塞渲染的核心JS：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-comment">&lt;!-- 预加载核心交互JS --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">link</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preload&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;/js/home-core.js&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;script&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">onload</span>=<span class="hljs-string">&quot;handlePreloadScript(this)&quot;</span></span><br><span class="hljs-tag">&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript"></span><br><span class="language-javascript">  <span class="hljs-comment">// 预加载完成后执行JS</span></span><br><span class="language-javascript">  <span class="hljs-keyword">function</span> <span class="hljs-title function_">handlePreloadScript</span>(<span class="hljs-params">link</span>) &#123;</span><br><span class="language-javascript">    link.<span class="hljs-property">onload</span> = <span class="hljs-literal">null</span>; <span class="hljs-comment">// 避免重复执行</span></span><br><span class="language-javascript">    <span class="hljs-keyword">const</span> script = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">&#x27;script&#x27;</span>);</span><br><span class="language-javascript">    script.<span class="hljs-property">src</span> = link.<span class="hljs-property">href</span>;</span><br><span class="language-javascript">    script.<span class="hljs-property">defer</span> = <span class="hljs-literal">true</span>; <span class="hljs-comment">// 保持异步执行</span></span><br><span class="language-javascript">    <span class="hljs-variable language_">document</span>.<span class="hljs-property">body</span>.<span class="hljs-title function_">appendChild</span>(script);</span><br><span class="language-javascript">  &#125;</span><br><span class="language-javascript"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br></code></pre></td></tr></table></figure>
+<p>✅ 对比<code>defer/async</code>：<code>preload</code>是「主动提前加载」，优先级高于<code>defer</code>，适合首屏LCP&#x2F;交互相关的JS。</p>
+<h3 id="场景4：预加载非首屏但即将用到的CSS（如弹窗-x2F-下拉菜单）"><a href="#场景4：预加载非首屏但即将用到的CSS（如弹窗-x2F-下拉菜单）" class="headerlink" title="场景4：预加载非首屏但即将用到的CSS（如弹窗&#x2F;下拉菜单）"></a>场景4：预加载非首屏但即将用到的CSS（如弹窗&#x2F;下拉菜单）</h3><p>首页加载完成后，用户大概率会触发的弹窗样式，提前预加载避免后续点击时阻塞：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-comment">&lt;!-- 预加载弹窗CSS，加载完成后转为正常样式表 --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">link</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preload&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;/css/popup.css&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">as</span>=<span class="hljs-string">&quot;style&quot;</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">onload</span>=<span class="hljs-string">&quot;this.onload=null; this.rel=&#x27;stylesheet&#x27;&quot;</span></span><br><span class="hljs-tag">&gt;</span><br><span class="hljs-comment">&lt;!-- 降级处理：不支持preload的浏览器直接加载 --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">noscript</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;stylesheet&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;/css/popup.css&quot;</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">noscript</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="三、preload使用核心注意事项（避坑关键）"><a href="#三、preload使用核心注意事项（避坑关键）" class="headerlink" title="三、preload使用核心注意事项（避坑关键）"></a>三、preload使用核心注意事项（避坑关键）</h2><h3 id="1-严禁滥用：仅预加载「首屏关键资源」"><a href="#1-严禁滥用：仅预加载「首屏关键资源」" class="headerlink" title="1. 严禁滥用：仅预加载「首屏关键资源」"></a>1. 严禁滥用：仅预加载「首屏关键资源」</h3><p><code>preload</code>会提升资源请求优先级（高于普通资源），若预加载非关键资源（如非首屏图片、次要JS），会抢占首屏资源的带宽，导致LCP延迟、首屏加载变慢。<br>✅ 建议：首页仅预加载2-3个核心资源（如核心字体+banner图+核心JS）。</p>
+<h3 id="2-避免重复加载（最常见坑）"><a href="#2-避免重复加载（最常见坑）" class="headerlink" title="2. 避免重复加载（最常见坑）"></a>2. 避免重复加载（最常见坑）</h3><ul>
+<li>字体预加载必须加<code>crossorigin=&quot;anonymous&quot;</code>：即使字体同域，浏览器也会将其视为跨域资源，缺省该属性会导致「预加载一次 + 正常引用再加载一次」，双倍消耗带宽。</li>
+<li><code>as</code>属性必须正确：如把CSS的<code>as</code>写成<code>script</code>，浏览器无法复用预加载资源，会重复请求。</li>
+</ul>
+<h3 id="3-区分preload与其他预加载指令（避免混淆）"><a href="#3-区分preload与其他预加载指令（避免混淆）" class="headerlink" title="3. 区分preload与其他预加载指令（避免混淆）"></a>3. 区分preload与其他预加载指令（避免混淆）</h3><p>很多开发者会混淆<code>preload</code>&#x2F;<code>prefetch</code>&#x2F;<code>preconnect</code>，核心区别如下：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>用途</th>
+<th>优先级</th>
+<th>加载时机</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>preload</code></td>
+<td>加载当前页面关键资源</td>
+<td>高</td>
+<td>页面加载初期立即加载</td>
+<td>首页首屏核心字体&#x2F;图片&#x2F;JS</td>
+</tr>
+<tr>
+<td><code>prefetch</code></td>
+<td>加载下一页可能用到的资源</td>
+<td>低</td>
+<td>浏览器空闲时加载</td>
+<td>首页跳转到列表页的通用JS</td>
+</tr>
+<tr>
+<td><code>preconnect</code></td>
+<td>提前建立TCP连接（不加载资源）</td>
+<td>-</td>
+<td>立即建立</td>
+<td>提前连接CDN&#x2F;接口域名</td>
+</tr>
+<tr>
+<td><code>dns-prefetch</code></td>
+<td>提前解析DNS（不建立连接）</td>
+<td>-</td>
+<td>立即解析</td>
+<td>非当前页面的第三方域名</td>
+</tr>
+</tbody></table>
+<h3 id="4-兼容性处理"><a href="#4-兼容性处理" class="headerlink" title="4. 兼容性处理"></a>4. 兼容性处理</h3><p><code>preload</code>支持Chrome 50+、Firefox 58+、Safari 11.1+，IE完全不支持。可通过JS检测是否支持，做降级：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-comment">// 检测是否支持preload</span><br><span class="hljs-keyword">const</span> <span class="hljs-title function_">isPreloadSupported</span> = (<span class="hljs-params"></span>) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> link = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">&#x27;link&#x27;</span>);<br>  <span class="hljs-keyword">return</span> <span class="hljs-string">&#x27;preload&#x27;</span> <span class="hljs-keyword">in</span> link;<br>&#125;;<br><br><span class="hljs-keyword">if</span> (!<span class="hljs-title function_">isPreloadSupported</span>()) &#123;<br>  <span class="hljs-comment">// 降级逻辑：直接加载核心资源</span><br>  <span class="hljs-keyword">const</span> styleLink = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">&#x27;link&#x27;</span>);<br>  styleLink.<span class="hljs-property">rel</span> = <span class="hljs-string">&#x27;stylesheet&#x27;</span>;<br>  styleLink.<span class="hljs-property">href</span> = <span class="hljs-string">&#x27;/css/home-core.css&#x27;</span>;<br>  <span class="hljs-variable language_">document</span>.<span class="hljs-property">head</span>.<span class="hljs-title function_">appendChild</span>(styleLink);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="5-监控预加载有效性"><a href="#5-监控预加载有效性" class="headerlink" title="5. 监控预加载有效性"></a>5. 监控预加载有效性</h3><p>用Lighthouse&#x2F;Chrome DevTools（Network面板）检查：</p>
+<ul>
+<li>预加载的资源「Initiator」列显示<code>preload</code>，且「Size」列不是<code>(prefetch cache)</code>（说明被复用）；</li>
+<li>避免Lighthouse提示「Unused preload request」（预加载了但未使用，纯浪费）。</li>
+</ul>
+<h2 id="四、preload性能验证方法"><a href="#四、preload性能验证方法" class="headerlink" title="四、preload性能验证方法"></a>四、preload性能验证方法</h2><ol>
+<li>用Chrome DevTools的「Performance」面板录制页面加载流程，对比预加载前后：<ul>
+<li>关键资源的「Request Start」时间是否提前；</li>
+<li>首屏LCP（最大内容绘制）时间是否降低。</li>
+</ul>
+</li>
+<li>用Web Vitals API监控真实用户数据（RUM），验证CLS&#x2F;LCP是否符合指标要求（LCP&lt;2.5s，CLS&lt;0.1）。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" class="category-chain-item">性能优化</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>详解preload预加载：用法、场景与避坑指南</div>
+      <div>https://zjw93615.github.io/2025/12/06/性能优化/详解preload预加载/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E5%AE%89%E5%85%A8/CSRF/" title="CSRF攻击">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CSRF攻击</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5/" title="缓存策略">
+                        <span class="hidden-mobile">缓存策略</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

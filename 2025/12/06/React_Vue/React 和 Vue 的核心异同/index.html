@@ -1,0 +1,767 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="React 和 Vue 的核心异同一、核心设计理念   维度 React Vue    设计思想 函数式编程（FP）为核心，“一切皆组件”，强调纯函数、不可变数据 渐进式框架，兼顾声明式&#x2F;命令式，模板驱动为主，兼顾灵活性与上手友好性   核心范式 JSX 驱动（HTML 融入 JS），逻辑与视图耦合在 JS 中 模板驱动（HTML 为主）+ 选项式&#x2F;组合式 API，视图与逻辑分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React 和 Vue 的核心异同">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/React_Vue/React%20%E5%92%8C%20Vue%20%E7%9A%84%E6%A0%B8%E5%BF%83%E5%BC%82%E5%90%8C/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="React 和 Vue 的核心异同一、核心设计理念   维度 React Vue    设计思想 函数式编程（FP）为核心，“一切皆组件”，强调纯函数、不可变数据 渐进式框架，兼顾声明式&#x2F;命令式，模板驱动为主，兼顾灵活性与上手友好性   核心范式 JSX 驱动（HTML 融入 JS），逻辑与视图耦合在 JS 中 模板驱动（HTML 为主）+ 选项式&#x2F;组合式 API，视图与逻辑分">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:37:57.346Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="React">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="缓存">
+<meta property="article:tag" content="Vue">
+<meta property="article:tag" content="Webpack">
+<meta property="article:tag" content="React_Vue">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>React 和 Vue 的核心异同 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="React 和 Vue 的核心异同"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">React 和 Vue 的核心异同</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="React-和-Vue-的核心异同"><a href="#React-和-Vue-的核心异同" class="headerlink" title="React 和 Vue 的核心异同"></a>React 和 Vue 的核心异同</h3><h4 id="一、核心设计理念"><a href="#一、核心设计理念" class="headerlink" title="一、核心设计理念"></a>一、核心设计理念</h4><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>设计思想</td>
+<td>函数式编程（FP）为核心，“一切皆组件”，强调纯函数、不可变数据</td>
+<td>渐进式框架，兼顾声明式&#x2F;命令式，模板驱动为主，兼顾灵活性与上手友好性</td>
+</tr>
+<tr>
+<td>核心范式</td>
+<td>JSX 驱动（HTML 融入 JS），逻辑与视图耦合在 JS 中</td>
+<td>模板驱动（HTML 为主）+ 选项式&#x2F;组合式 API，视图与逻辑分层更清晰</td>
+</tr>
+<tr>
+<td>学习曲线</td>
+<td>偏陡峭（需理解函数式、hooks 闭包、不可变数据）</td>
+<td>更平缓（模板语法接近原生 HTML，响应式系统低门槛）</td>
+</tr>
+</tbody></table>
+<h4 id="二、核心语法与特性"><a href="#二、核心语法与特性" class="headerlink" title="二、核心语法与特性"></a>二、核心语法与特性</h4><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>组件定义</td>
+<td>函数组件（Hooks 为主）+ 类组件（逐步淘汰）</td>
+<td>选项式 API（Options API，Vue2 主流）+ 组合式 API（Composition API，Vue3 主推）</td>
+</tr>
+<tr>
+<td>状态管理</td>
+<td>内置 Hooks（useState&#x2F;useReducer），复杂场景依赖 Redux&#x2F;Zustand（外部库）</td>
+<td>内置响应式系统（ref&#x2F;reactive），复杂场景用 Pinia&#x2F;Vuex（官方推荐 Pinia）</td>
+</tr>
+<tr>
+<td>响应式原理</td>
+<td>基于“状态更新触发重新渲染”，通过不可变数据 + 虚拟 DOM 对比实现（需手动优化重渲染）</td>
+<td>基于 ES6 Proxy（Vue3）&#x2F;Object.defineProperty（Vue2）的响应式，精准追踪依赖，只更新变化节点</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>函数组件通过 useEffect 覆盖挂载&#x2F;更新&#x2F;卸载；类组件有专属钩子（componentDidMount 等）</td>
+<td>Options API 有细分钩子（created&#x2F;mounted&#x2F;updated 等）；Composition API 用 onMounted&#x2F;onUnmounted 等，语义更直观</td>
+</tr>
+<tr>
+<td>模板&#x2F;视图</td>
+<td>JSX 写视图，支持完全的 JS 逻辑嵌入（如条件&#x2F;循环用 JS 语法）</td>
+<td>模板语法（v-if&#x2F;v-for&#x2F;v-bind 等指令），HTML 更原生，逻辑通过指令&#x2F;过滤器（Vue2）&#x2F;计算属性实现</td>
+</tr>
+<tr>
+<td>双向绑定</td>
+<td>无原生支持，需通过“受控组件 + 回调”模拟（如 input onChange 绑定）</td>
+<td>原生支持 v-model（底层是 props + emit 语法糖），可自定义双向绑定逻辑</td>
+</tr>
+</tbody></table>
+<h4 id="三、性能与生态"><a href="#三、性能与生态" class="headerlink" title="三、性能与生态"></a>三、性能与生态</h4><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>React</th>
+<th>Vue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>虚拟 DOM</td>
+<td>重更新策略：状态变化触发整棵组件树对比，需手动用 memo&#x2F;useMemo 优化</td>
+<td>轻更新策略：响应式系统精准追踪依赖，只更新变化的 DOM 节点，默认优化更友好</td>
+</tr>
+<tr>
+<td>生态规模</td>
+<td>生态极庞大（Next.js、React Native、React Query 等），适合超大型复杂应用</td>
+<td>生态轻量且聚焦（Nuxt.js、VueUse、Pinia 等），文档更友好，中小应用开发效率更高</td>
+</tr>
+<tr>
+<td>跨端能力</td>
+<td>React Native 成熟，可跨多端（移动端&#x2F;桌面端）</td>
+<td>Vue 跨端依赖 uni-app&#x2F;Weex，生态成熟度略低</td>
+</tr>
+</tbody></table>
+<h3 id="从-React-转到-Vue-的相通之处"><a href="#从-React-转到-Vue-的相通之处" class="headerlink" title="从 React 转到 Vue 的相通之处"></a>从 React 转到 Vue 的相通之处</h3><p>两者核心思想高度一致，迁移时无需重构底层逻辑，仅需适配语法：</p>
+<h4 id="1-组件化思维完全通用"><a href="#1-组件化思维完全通用" class="headerlink" title="1. 组件化思维完全通用"></a>1. 组件化思维完全通用</h4><ul>
+<li>都遵循“拆分为独立可复用组件”的核心逻辑，组件间通过 <code>props</code> 传递数据，推荐<strong>单向数据流</strong>（Vue 的 v-model 底层也是 props + emit，本质符合单向流）；</li>
+<li>组件通信方式相通：父传子（props）、子传父（React 回调函数 &#x2F; Vue emit）、跨组件通信（React Context &#x2F; Vue Provide&#x2F;Inject）。</li>
+</ul>
+<h4 id="2-状态管理逻辑相通"><a href="#2-状态管理逻辑相通" class="headerlink" title="2. 状态管理逻辑相通"></a>2. 状态管理逻辑相通</h4><ul>
+<li>基础状态：React Hooks（useState）≈ Vue3 ref&#x2F;reactive，都是“声明状态 + 触发更新”的逻辑；</li>
+<li>副作用处理：React useEffect ≈ Vue onMounted&#x2F;watchEffect，都是处理异步、DOM 操作等副作用，且都支持依赖数组控制执行时机；</li>
+<li>复杂状态：Redux&#x2F;Zustand ≈ Pinia&#x2F;Vuex，都遵循“单一数据源”“通过特定方式修改状态（dispatch&#x2F;action）”，核心是“状态与视图解耦”。</li>
+</ul>
+<h4 id="3-性能优化思路一致"><a href="#3-性能优化思路一致" class="headerlink" title="3. 性能优化思路一致"></a>3. 性能优化思路一致</h4><ul>
+<li>都需避免不必要的重渲染：React 用 memo&#x2F;useMemo&#x2F;useCallback，Vue 用 computed&#x2F;shallowRef&#x2F;memo，核心都是“缓存计算结果&#x2F;组件渲染结果”；</li>
+<li>虚拟 DOM 优化逻辑相通：都是通过减少真实 DOM 操作提升性能，仅需适配 Vue 的响应式优化（无需手动管理不可变数据）。</li>
+</ul>
+<h4 id="4-路由与工程化完全通用"><a href="#4-路由与工程化完全通用" class="headerlink" title="4. 路由与工程化完全通用"></a>4. 路由与工程化完全通用</h4><ul>
+<li>路由：React Router ≈ Vue Router，都支持动态路由、嵌套路由、导航守卫（React Router v6 导航守卫 &#x2F; Vue Router 路由守卫），跳转方式都是“声明式（Link&#x2F;router-link）+ 编程式（push）”；</li>
+<li>工程化：都基于 Webpack&#x2F;Vite 构建，支持 TS，脚手架（CRA&#x2F;Vue CLI&#x2F;Vite）、热更新、打包配置、环境变量等开发流程完全一致。</li>
+</ul>
+<h4 id="5-组合式逻辑复用相通"><a href="#5-组合式逻辑复用相通" class="headerlink" title="5. 组合式逻辑复用相通"></a>5. 组合式逻辑复用相通</h4><p>React 的自定义 Hooks ≈ Vue3 的 Composables（组合式函数），都是将通用逻辑（如请求、表单校验）抽离为可复用函数，实现跨组件逻辑复用。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/React-Vue/" class="category-chain-item">React_Vue</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/React/">#React</a>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">#性能优化</a>
+      
+        <a href="/tags/%E7%BC%93%E5%AD%98/">#缓存</a>
+      
+        <a href="/tags/Vue/">#Vue</a>
+      
+        <a href="/tags/Webpack/">#Webpack</a>
+      
+        <a href="/tags/React-Vue/">#React_Vue</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>React 和 Vue 的核心异同</div>
+      <div>https://zjw93615.github.io/2025/12/06/React_Vue/React 和 Vue 的核心异同/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/React_Vue/React%20&amp;%20Vue%20%E8%B5%84%E6%B7%B1%E5%B7%A5%E7%A8%8B%E5%B8%88%E9%9D%A2%E8%AF%95%E9%A2%98/" title="React &amp; Vue 资深工程师面试题（附详细解答）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">React &amp; Vue 资深工程师面试题（附详细解答）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E9%9D%A2%E8%AF%95/%E9%9D%A2%E8%AF%95%E9%A2%98/" title="面试题">
+                        <span class="hidden-mobile">面试题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

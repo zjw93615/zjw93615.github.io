@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一、环境准备1. 初始化项目 &amp; 安装依赖1234# 初始化npm项目npm init -y# 安装核心依赖：koa（后端框架）、ioredis（Redis客户端，比原生redis包更友好）、koa-router（路由）npm install koa koa-router ioredis  2. 基础配置（Redis连接 + Koa启动）创建 app.js 作为入口文件，先完成Redis客">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初始化npm项目">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/Redis/Redis%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="一、环境准备1. 初始化项目 &amp; 安装依赖1234# 初始化npm项目npm init -y# 安装核心依赖：koa（后端框架）、ioredis（Redis客户端，比原生redis包更友好）、koa-router（路由）npm install koa koa-router ioredis  2. 基础配置（Redis连接 + Koa启动）创建 app.js 作为入口文件，先完成Redis客">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:54:34.810Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>初始化npm项目 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="初始化npm项目"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          134 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">初始化npm项目</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h3><h4 id="1-初始化项目-amp-安装依赖"><a href="#1-初始化项目-amp-安装依赖" class="headerlink" title="1. 初始化项目 &amp; 安装依赖"></a>1. 初始化项目 &amp; 安装依赖</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 初始化npm项目</span><br>npm init -y<br><span class="hljs-comment"># 安装核心依赖：koa（后端框架）、ioredis（Redis客户端，比原生redis包更友好）、koa-router（路由）</span><br>npm install koa koa-router ioredis<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-基础配置（Redis连接-Koa启动）"><a href="#2-基础配置（Redis连接-Koa启动）" class="headerlink" title="2. 基础配置（Redis连接 + Koa启动）"></a>2. 基础配置（Redis连接 + Koa启动）</h4><p>创建 <code>app.js</code> 作为入口文件，先完成Redis客户端初始化和Koa基础配置：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Router</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-router&#x27;</span>);<br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Redis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;ioredis&#x27;</span>);<br><br><span class="hljs-comment">// 1. 初始化Koa实例和路由</span><br><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><span class="hljs-keyword">const</span> router = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Router</span>();<br><br><span class="hljs-comment">// 2. 初始化Redis客户端（默认连接本地6379，无密码；远程需配置host/password）</span><br><span class="hljs-keyword">const</span> redis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>(&#123;<br>  <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;127.0.0.1&#x27;</span>,<br>  <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span>,<br>  <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;&#x27;</span>, <span class="hljs-comment">// 本地Redis若无密码则留空</span><br>  <span class="hljs-attr">db</span>: <span class="hljs-number">0</span>, <span class="hljs-comment">// 使用第0个数据库</span><br>  <span class="hljs-attr">retryStrategy</span>: <span class="hljs-function">(<span class="hljs-params">times</span>) =&gt;</span> &#123; <span class="hljs-comment">// 重连策略，避免Redis断开后服务挂掉</span><br>    <span class="hljs-keyword">const</span> delay = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(times * <span class="hljs-number">100</span>, <span class="hljs-number">3000</span>);<br>    <span class="hljs-keyword">return</span> delay;<br>  &#125;<br>&#125;);<br><br><span class="hljs-comment">// 监听Redis连接错误</span><br>redis.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> &#123;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Redis连接失败：&#x27;</span>, err);<br>&#125;);<br><br><span class="hljs-comment">// 3. 挂载路由 &amp; 启动服务</span><br>app.<span class="hljs-title function_">use</span>(router.<span class="hljs-title function_">routes</span>()).<span class="hljs-title function_">use</span>(router.<span class="hljs-title function_">allowedMethods</span>());<br>app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3000</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Koa服务启动：http://localhost:3000&#x27;</span>);<br>&#125;);<br><br><span class="hljs-comment">// 导出redis实例，供后续路由使用</span><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = &#123; redis &#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="二、各数据结构实战（附Koa路由代码）"><a href="#二、各数据结构实战（附Koa路由代码）" class="headerlink" title="二、各数据结构实战（附Koa路由代码）"></a>二、各数据结构实战（附Koa路由代码）</h3><p>以下所有示例均基于上述基础配置，在 <code>app.js</code> 中追加路由即可。</p>
+<hr>
+<h4 id="1-String（字符串）"><a href="#1-String（字符串）" class="headerlink" title="1. String（字符串）"></a>1. String（字符串）</h4><p><strong>核心场景</strong>：缓存简单数据、计数器（阅读量&#x2F;点赞数）、分布式锁<br><strong>核心API</strong>：<code>set/get/incr/expire/setnx</code></p>
+<h5 id="示例1：缓存用户信息（序列化JSON）"><a href="#示例1：缓存用户信息（序列化JSON）" class="headerlink" title="示例1：缓存用户信息（序列化JSON）"></a>示例1：缓存用户信息（序列化JSON）</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口：GET /user/info/:userId</span><br><span class="hljs-comment"> * 功能：获取用户信息（优先从Redis缓存，无则模拟查库后写入缓存）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/user/info/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> cacheKey = <span class="hljs-string">`user:info:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// 1. 先查Redis缓存</span><br>  <span class="hljs-keyword">const</span> cacheData = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">get</span>(cacheKey);<br>  <span class="hljs-keyword">if</span> (cacheData) &#123;<br>    ctx.<span class="hljs-property">body</span> = &#123;<br>      <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>      <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;从缓存获取&#x27;</span>,<br>      <span class="hljs-attr">data</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(cacheData)<br>    &#125;;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br><br>  <span class="hljs-comment">// 2. 缓存未命中，模拟查询数据库（实际项目替换为MySQL/Mongo查询）</span><br>  <span class="hljs-keyword">const</span> dbData = &#123;<br>    userId,<br>    <span class="hljs-attr">username</span>: <span class="hljs-string">`用户<span class="hljs-subst">$&#123;userId&#125;</span>`</span>,<br>    <span class="hljs-attr">age</span>: <span class="hljs-number">20</span> + <span class="hljs-built_in">parseInt</span>(userId),<br>    <span class="hljs-attr">phone</span>: <span class="hljs-string">`1380000<span class="hljs-subst">$&#123;userId.padStart(<span class="hljs-number">4</span>, <span class="hljs-string">&#x27;0&#x27;</span>)&#125;</span>`</span><br>  &#125;;<br><br>  <span class="hljs-comment">// 3. 写入Redis缓存，设置过期时间（避免缓存永久有效）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">set</span>(cacheKey, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(dbData), <span class="hljs-string">&#x27;EX&#x27;</span>, <span class="hljs-number">3600</span>); <span class="hljs-comment">// EX：过期时间（秒），3600=1小时</span><br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;从数据库获取&#x27;</span>,<br>    <span class="hljs-attr">data</span>: dbData<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h5 id="示例2：文章阅读量计数器"><a href="#示例2：文章阅读量计数器" class="headerlink" title="示例2：文章阅读量计数器"></a>示例2：文章阅读量计数器</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：GET /article/visit/:articleId</span><br><span class="hljs-comment"> * 功能：增加文章阅读量（原子操作，避免并发问题）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/article/visit/:articleId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; articleId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> countKey = <span class="hljs-string">`article:visit:<span class="hljs-subst">$&#123;articleId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// incr：原子自增（即使多请求并发，也不会计数错误）</span><br>  <span class="hljs-keyword">const</span> newCount = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">incr</span>(countKey);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;阅读量+1成功&#x27;</span>,<br>    <span class="hljs-attr">data</span>: &#123; articleId, <span class="hljs-attr">visitCount</span>: newCount &#125;<br>  &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /article/visit/count/:articleId</span><br><span class="hljs-comment"> * 功能：获取文章当前阅读量</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/article/visit/count/:articleId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; articleId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> countKey = <span class="hljs-string">`article:visit:<span class="hljs-subst">$&#123;articleId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// get：获取值，若key不存在则返回null，默认转为0</span><br>  <span class="hljs-keyword">const</span> visitCount = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">get</span>(countKey) || <span class="hljs-number">0</span>;<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: &#123; articleId, <span class="hljs-attr">visitCount</span>: <span class="hljs-built_in">parseInt</span>(visitCount) &#125;<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="2-Hash（哈希）"><a href="#2-Hash（哈希）" class="headerlink" title="2. Hash（哈希）"></a>2. Hash（哈希）</h4><p><strong>核心场景</strong>：存储多字段对象（用户详情）、购物车（用户ID→商品ID:数量）<br><strong>核心API</strong>：<code>hset/hget/hgetall/hincrby/hdel</code></p>
+<h5 id="示例1：存储用户详情（多字段，无需序列化JSON）"><a href="#示例1：存储用户详情（多字段，无需序列化JSON）" class="headerlink" title="示例1：存储用户详情（多字段，无需序列化JSON）"></a>示例1：存储用户详情（多字段，无需序列化JSON）</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /user/save/:userId</span><br><span class="hljs-comment"> * 功能：保存用户详情到Hash</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/user/save/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> &#123; username, age, email &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>; <span class="hljs-comment">// 需配合koa-body解析请求体（npm install koa-body）</span><br>  <span class="hljs-keyword">const</span> hashKey = <span class="hljs-string">`user:hash:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// hset：批量设置Hash的字段和值</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">hset</span>(hashKey, &#123;<br>    username,<br>    age,<br>    email,<br>    <span class="hljs-attr">updateTime</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>()<br>  &#125;);<br><br>  <span class="hljs-comment">// 设置过期时间（Hash本身不能直接设过期，需给key设）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">expire</span>(hashKey, <span class="hljs-number">86400</span>); <span class="hljs-comment">// 24小时过期</span><br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;用户信息保存成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /user/hash/:userId</span><br><span class="hljs-comment"> * 功能：获取用户Hash详情（可单独获取某个字段，或全部）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/user/hash/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> hashKey = <span class="hljs-string">`user:hash:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// 方式1：获取单个字段</span><br>  <span class="hljs-comment">// const username = await redis.hget(hashKey, &#x27;username&#x27;);</span><br><br>  <span class="hljs-comment">// 方式2：获取所有字段</span><br>  <span class="hljs-keyword">const</span> userInfo = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">hgetall</span>(hashKey);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: userInfo || &#123;&#125;<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h5 id="示例2：购物车功能"><a href="#示例2：购物车功能" class="headerlink" title="示例2：购物车功能"></a>示例2：购物车功能</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /cart/add</span><br><span class="hljs-comment"> * 功能：添加商品到购物车</span><br><span class="hljs-comment"> * 请求体：&#123; userId: &#x27;1001&#x27;, productId: &#x27;p001&#x27;, count: 1 &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/cart/add&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId, productId, count &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-keyword">const</span> cartKey = <span class="hljs-string">`cart:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// hincrby：原子增减购物车商品数量（避免并发超卖）</span><br>  <span class="hljs-comment">// 若商品不存在则自动创建，值为count；若存在则累加</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">hincrby</span>(cartKey, productId, count);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;添加购物车成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /cart/list/:userId</span><br><span class="hljs-comment"> * 功能：获取用户购物车列表</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/cart/list/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> cartKey = <span class="hljs-string">`cart:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// hgetall：获取购物车所有商品（productId: count）</span><br>  <span class="hljs-keyword">const</span> cartList = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">hgetall</span>(cartKey);<br>  <span class="hljs-comment">// 格式转换：&#123; p001: &#x27;1&#x27;, p002: &#x27;2&#x27; &#125; → [&#123; productId: &#x27;p001&#x27;, count: 1 &#125;, ...]</span><br>  <span class="hljs-keyword">const</span> formatCart = <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(cartList).<span class="hljs-title function_">map</span>(<span class="hljs-function">(<span class="hljs-params">[productId, count]</span>) =&gt;</span> (&#123;<br>    productId,<br>    <span class="hljs-attr">count</span>: <span class="hljs-built_in">parseInt</span>(count)<br>  &#125;));<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: formatCart<br>  &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口3：POST /cart/delete</span><br><span class="hljs-comment"> * 功能：删除购物车商品</span><br><span class="hljs-comment"> * 请求体：&#123; userId: &#x27;1001&#x27;, productId: &#x27;p001&#x27; &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/cart/delete&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId, productId &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-keyword">const</span> cartKey = <span class="hljs-string">`cart:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">hdel</span>(cartKey, productId);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;删除商品成功&#x27;</span> &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="3-List（列表）"><a href="#3-List（列表）" class="headerlink" title="3. List（列表）"></a>3. List（列表）</h4><p><strong>核心场景</strong>：简单消息队列、最新动态列表（朋友圈&#x2F;评论）<br><strong>核心API</strong>：<code>lpush/rpush/lpop/rpop/lrange/ltrim</code></p>
+<h5 id="示例1：简单消息队列（生产者-消费者）"><a href="#示例1：简单消息队列（生产者-消费者）" class="headerlink" title="示例1：简单消息队列（生产者+消费者）"></a>示例1：简单消息队列（生产者+消费者）</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 队列key</span><br><span class="hljs-keyword">const</span> msgQueueKey = <span class="hljs-string">&#x27;queue:msg&#x27;</span>;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /queue/produce</span><br><span class="hljs-comment"> * 功能：生产消息（往队列头部塞）</span><br><span class="hljs-comment"> * 请求体：&#123; content: &#x27;订单支付成功&#x27; &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/queue/produce&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; content &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-keyword">const</span> msg = &#123;<br>    <span class="hljs-attr">id</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>().<span class="hljs-title function_">toString</span>(<span class="hljs-number">36</span>).<span class="hljs-title function_">slice</span>(<span class="hljs-number">2</span>), <span class="hljs-comment">// 唯一消息ID</span><br>    content,<br>    <span class="hljs-attr">time</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>()<br>  &#125;;<br><br>  <span class="hljs-comment">// lpush：往列表左侧（头部）添加消息</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">lpush</span>(msgQueueKey, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(msg));<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;消息生产成功&#x27;</span>, <span class="hljs-attr">data</span>: msg.<span class="hljs-property">id</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /queue/consume</span><br><span class="hljs-comment"> * 功能：消费消息（从队列尾部取，FIFO）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/queue/consume&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-comment">// rpop：从列表右侧（尾部）取出消息，若队列为空则返回null</span><br>  <span class="hljs-keyword">const</span> msgStr = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">rpop</span>(msgQueueKey);<br>  <span class="hljs-keyword">if</span> (!msgStr) &#123;<br>    ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;队列无消息&#x27;</span> &#125;;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br><br>  <span class="hljs-keyword">const</span> msg = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(msgStr);<br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;消费消息成功&#x27;</span>,<br>    <span class="hljs-attr">data</span>: msg<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h5 id="示例2：最新动态列表（限制仅保留10条）"><a href="#示例2：最新动态列表（限制仅保留10条）" class="headerlink" title="示例2：最新动态列表（限制仅保留10条）"></a>示例2：最新动态列表（限制仅保留10条）</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /dynamic/add/:userId</span><br><span class="hljs-comment"> * 功能：添加用户动态</span><br><span class="hljs-comment"> * 请求体：&#123; content: &#x27;今天天气不错&#x27; &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/dynamic/add/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> &#123; content &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-keyword">const</span> dynamicKey = <span class="hljs-string">`dynamic:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br>  <span class="hljs-keyword">const</span> dynamic = &#123;<br>    content,<br>    <span class="hljs-attr">time</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>()<br>  &#125;;<br><br>  <span class="hljs-comment">// 1. 往列表头部添加动态</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">lpush</span>(dynamicKey, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(dynamic));<br>  <span class="hljs-comment">// 2. 限制列表长度为10（只保留最新10条，超出的自动删除）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">ltrim</span>(dynamicKey, <span class="hljs-number">0</span>, <span class="hljs-number">9</span>); <span class="hljs-comment">// 0-9共10条</span><br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;动态添加成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /dynamic/list/:userId</span><br><span class="hljs-comment"> * 功能：获取用户最新动态列表</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/dynamic/list/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> dynamicKey = <span class="hljs-string">`dynamic:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// lrange：获取列表所有元素（0到-1表示全部）</span><br>  <span class="hljs-keyword">const</span> dynamicList = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">lrange</span>(dynamicKey, <span class="hljs-number">0</span>, -<span class="hljs-number">1</span>);<br>  <span class="hljs-keyword">const</span> formatList = dynamicList.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(item));<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: formatList<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="4-Set（集合）"><a href="#4-Set（集合）" class="headerlink" title="4. Set（集合）"></a>4. Set（集合）</h4><p><strong>核心场景</strong>：好友关系（共同好友）、抽奖、标签去重<br><strong>核心API</strong>：<code>sadd/smembers/sinter/srandmember/spop</code></p>
+<h5 id="示例1：共同好友查询"><a href="#示例1：共同好友查询" class="headerlink" title="示例1：共同好友查询"></a>示例1：共同好友查询</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /friend/add</span><br><span class="hljs-comment"> * 功能：添加好友</span><br><span class="hljs-comment"> * 请求体：&#123; userId: &#x27;1001&#x27;, friendId: &#x27;1002&#x27; &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/friend/add&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId, friendId &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-keyword">const</span> friendKey = <span class="hljs-string">`friend:<span class="hljs-subst">$&#123;userId&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// sadd：添加好友到集合（自动去重，重复添加无效果）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">sadd</span>(friendKey, friendId);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;添加好友成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /friend/common/:userId1/:userId2</span><br><span class="hljs-comment"> * 功能：查询两个用户的共同好友</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/friend/common/:userId1/:userId2&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId1, userId2 &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> key1 = <span class="hljs-string">`friend:<span class="hljs-subst">$&#123;userId1&#125;</span>`</span>;<br>  <span class="hljs-keyword">const</span> key2 = <span class="hljs-string">`friend:<span class="hljs-subst">$&#123;userId2&#125;</span>`</span>;<br><br>  <span class="hljs-comment">// sinter：求两个集合的交集（共同好友）</span><br>  <span class="hljs-keyword">const</span> commonFriends = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">sinter</span>(key1, key2);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: &#123;<br>      userId1,<br>      userId2,<br>      commonFriends <span class="hljs-comment">// [&#x27;1003&#x27;, &#x27;1004&#x27;]</span><br>    &#125;<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h5 id="示例2：抽奖功能"><a href="#示例2：抽奖功能" class="headerlink" title="示例2：抽奖功能"></a>示例2：抽奖功能</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 抽奖池key</span><br><span class="hljs-keyword">const</span> lotteryKey = <span class="hljs-string">&#x27;lottery:pool&#x27;</span>;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /lottery/join</span><br><span class="hljs-comment"> * 功能：加入抽奖（用户ID）</span><br><span class="hljs-comment"> * 请求体：&#123; userId: &#x27;1001&#x27; &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/lottery/join&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br><br>  <span class="hljs-comment">// sadd：加入抽奖池（自动去重，一个用户只能加一次）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">sadd</span>(lotteryKey, userId);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;加入抽奖成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /lottery/draw/:count</span><br><span class="hljs-comment"> * 功能：抽奖（count为中奖人数）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/lottery/draw/:count&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; count &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> drawCount = <span class="hljs-built_in">parseInt</span>(count);<br><br>  <span class="hljs-comment">// 方式1：srandmember - 抽奖后用户仍在池子里（可重复中奖）</span><br>  <span class="hljs-comment">// const winners = await redis.srandmember(lotteryKey, drawCount);</span><br><br>  <span class="hljs-comment">// 方式2：spop - 抽奖后用户移出池子（不可重复中奖）</span><br>  <span class="hljs-keyword">const</span> winners = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">spop</span>(lotteryKey, drawCount);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">`抽中<span class="hljs-subst">$&#123;drawCount&#125;</span>人`</span>,<br>    <span class="hljs-attr">data</span>: &#123; winners &#125;<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="5-Sorted-Set（有序集合）"><a href="#5-Sorted-Set（有序集合）" class="headerlink" title="5. Sorted Set（有序集合）"></a>5. Sorted Set（有序集合）</h4><p><strong>核心场景</strong>：排行榜、延时队列<br><strong>核心API</strong>：<code>zadd/zrevrange/zrangebyscore/zrem</code></p>
+<h5 id="示例1：游戏积分排行榜"><a href="#示例1：游戏积分排行榜" class="headerlink" title="示例1：游戏积分排行榜"></a>示例1：游戏积分排行榜</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 排行榜key</span><br><span class="hljs-keyword">const</span> rankKey = <span class="hljs-string">&#x27;rank:game:score&#x27;</span>;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /rank/add</span><br><span class="hljs-comment"> * 功能：添加用户积分</span><br><span class="hljs-comment"> * 请求体：&#123; userId: &#x27;1001&#x27;, score: 95 &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/rank/add&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId, score &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br><br>  <span class="hljs-comment">// zadd：添加用户到有序集合（score为排序依据，userId为成员）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">zadd</span>(rankKey, score, userId);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;积分添加成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /rank/top/:size</span><br><span class="hljs-comment"> * 功能：获取排行榜前N名（降序，积分越高越靠前）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/rank/top/:size&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; size &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> topSize = <span class="hljs-built_in">parseInt</span>(size);<br><br>  <span class="hljs-comment">// zrevrange：降序获取前N名（0到topSize-1），WITHSCORES表示同时返回积分</span><br>  <span class="hljs-keyword">const</span> rankList = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">zrevrange</span>(rankKey, <span class="hljs-number">0</span>, topSize - <span class="hljs-number">1</span>, <span class="hljs-string">&#x27;WITHSCORES&#x27;</span>);<br>  <br>  <span class="hljs-comment">// 格式转换：[&#x27;1001&#x27;, &#x27;95&#x27;, &#x27;1002&#x27;, &#x27;88&#x27;] → [&#123; userId: &#x27;1001&#x27;, score: 95 &#125;, ...]</span><br>  <span class="hljs-keyword">const</span> formatRank = [];<br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; rankList.<span class="hljs-property">length</span>; i += <span class="hljs-number">2</span>) &#123;<br>    formatRank.<span class="hljs-title function_">push</span>(&#123;<br>      <span class="hljs-attr">rank</span>: i / <span class="hljs-number">2</span> + <span class="hljs-number">1</span>,<br>      <span class="hljs-attr">userId</span>: rankList[i],<br>      <span class="hljs-attr">score</span>: <span class="hljs-built_in">parseInt</span>(rankList[i + <span class="hljs-number">1</span>])<br>    &#125;);<br>  &#125;<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: formatRank<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h5 id="示例2：延时队列（按时间戳执行任务）"><a href="#示例2：延时队列（按时间戳执行任务）" class="headerlink" title="示例2：延时队列（按时间戳执行任务）"></a>示例2：延时队列（按时间戳执行任务）</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 延时队列key</span><br><span class="hljs-keyword">const</span> delayQueueKey = <span class="hljs-string">&#x27;delay:queue&#x27;</span>;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /delay/add</span><br><span class="hljs-comment"> * 功能：添加延时任务</span><br><span class="hljs-comment"> * 请求体：&#123; taskId: &#x27;t001&#x27;, delaySeconds: 10, content: &#x27;10秒后执行的任务&#x27; &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/delay/add&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; taskId, delaySeconds, content &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-comment">// 计算任务执行时间戳（当前时间 + 延迟秒数）</span><br>  <span class="hljs-keyword">const</span> executeTime = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + delaySeconds * <span class="hljs-number">1000</span>;<br><br>  <span class="hljs-comment">// zadd：score为执行时间戳，member为任务JSON</span><br>  <span class="hljs-keyword">const</span> task = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(&#123; taskId, content &#125;);<br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">zadd</span>(delayQueueKey, executeTime, task);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;延时任务添加成功&#x27;</span>,<br>    <span class="hljs-attr">data</span>: &#123; <span class="hljs-attr">executeTime</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(executeTime).<span class="hljs-title function_">toISOString</span>() &#125;<br>  &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /delay/consume</span><br><span class="hljs-comment"> * 功能：消费延时任务（只执行已到时间的任务）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/delay/consume&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> now = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br><br>  <span class="hljs-comment">// zrangebyscore：获取score ≤ 当前时间的任务（0到now），只取1条</span><br>  <span class="hljs-keyword">const</span> tasks = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">zrangebyscore</span>(delayQueueKey, <span class="hljs-number">0</span>, now, <span class="hljs-string">&#x27;LIMIT&#x27;</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);<br>  <span class="hljs-keyword">if</span> (tasks.<span class="hljs-property">length</span> === <span class="hljs-number">0</span>) &#123;<br>    ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;暂无到期任务&#x27;</span> &#125;;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br><br>  <span class="hljs-keyword">const</span> task = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(tasks[<span class="hljs-number">0</span>]);<br>  <span class="hljs-comment">// 消费后删除任务（避免重复执行）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">zrem</span>(delayQueueKey, tasks[<span class="hljs-number">0</span>]);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;消费延时任务成功&#x27;</span>,<br>    <span class="hljs-attr">data</span>: task<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="6-BitMap（位图）"><a href="#6-BitMap（位图）" class="headerlink" title="6. BitMap（位图）"></a>6. BitMap（位图）</h4><p><strong>核心场景</strong>：用户签到、在线状态<br><strong>核心API</strong>：<code>setbit/getbit/bitcount</code></p>
+<h5 id="示例1：用户签到功能"><a href="#示例1：用户签到功能" class="headerlink" title="示例1：用户签到功能"></a>示例1：用户签到功能</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /sign/in/:userId/:day</span><br><span class="hljs-comment"> * 功能：用户签到（day为当月第几天，如1=1号）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/sign/in/:userId/:day&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId, day &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> signKey = <span class="hljs-string">`sign:<span class="hljs-subst">$&#123;userId&#125;</span>:202506`</span>; <span class="hljs-comment">// 按年月分key</span><br>  <span class="hljs-keyword">const</span> dayNum = <span class="hljs-built_in">parseInt</span>(day) - <span class="hljs-number">1</span>; <span class="hljs-comment">// BitMap索引从0开始，1号对应索引0</span><br><br>  <span class="hljs-comment">// setbit：设置某一位的值（1=签到，0=未签到）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">setbit</span>(signKey, dayNum, <span class="hljs-number">1</span>);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;签到成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /sign/count/:userId</span><br><span class="hljs-comment"> * 功能：查询用户当月签到天数</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/sign/count/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> signKey = <span class="hljs-string">`sign:<span class="hljs-subst">$&#123;userId&#125;</span>:202506`</span>;<br><br>  <span class="hljs-comment">// bitcount：统计位图中值为1的位数（签到天数）</span><br>  <span class="hljs-keyword">const</span> signCount = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">bitcount</span>(signKey);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: &#123; userId, signCount, <span class="hljs-attr">month</span>: <span class="hljs-string">&#x27;2025年06月&#x27;</span> &#125;<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h5 id="示例2：用户在线状态"><a href="#示例2：用户在线状态" class="headerlink" title="示例2：用户在线状态"></a>示例2：用户在线状态</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /status/set/:userId/:status</span><br><span class="hljs-comment"> * 功能：设置用户在线状态（status=1在线，0离线）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/status/set/:userId/:status&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId, status &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> statusKey = <span class="hljs-string">&#x27;user:online:status&#x27;</span>;<br>  <span class="hljs-keyword">const</span> userIdNum = <span class="hljs-built_in">parseInt</span>(userId); <span class="hljs-comment">// 位图索引用数字ID更方便</span><br><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">setbit</span>(statusKey, userIdNum, status);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">`用户<span class="hljs-subst">$&#123;userId&#125;</span>状态设为<span class="hljs-subst">$&#123;status === <span class="hljs-string">&#x27;1&#x27;</span> ? <span class="hljs-string">&#x27;在线&#x27;</span> : <span class="hljs-string">&#x27;离线&#x27;</span>&#125;</span>`</span><br>  &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /status/get/:userId</span><br><span class="hljs-comment"> * 功能：查询用户在线状态</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/status/get/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> statusKey = <span class="hljs-string">&#x27;user:online:status&#x27;</span>;<br>  <span class="hljs-keyword">const</span> userIdNum = <span class="hljs-built_in">parseInt</span>(userId);<br><br>  <span class="hljs-comment">// getbit：获取某一位的值</span><br>  <span class="hljs-keyword">const</span> status = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">getbit</span>(statusKey, userIdNum);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: &#123;<br>      userId,<br>      <span class="hljs-attr">status</span>: status === <span class="hljs-number">1</span> ? <span class="hljs-string">&#x27;在线&#x27;</span> : <span class="hljs-string">&#x27;离线&#x27;</span><br>    &#125;<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="7-HyperLogLog（基数统计）"><a href="#7-HyperLogLog（基数统计）" class="headerlink" title="7. HyperLogLog（基数统计）"></a>7. HyperLogLog（基数统计）</h4><p><strong>核心场景</strong>：UV统计（无需存储用户ID，仅统计去重人数）<br><strong>核心API</strong>：<code>pfadd/pfcount</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// UV统计key</span><br><span class="hljs-keyword">const</span> uvKey = <span class="hljs-string">&#x27;uv:website:202506&#x27;</span>;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /uv/add/:userId</span><br><span class="hljs-comment"> * 功能：记录访问用户（用于UV统计）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/uv/add/:userId&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; userId &#125; = ctx.<span class="hljs-property">params</span>;<br><br>  <span class="hljs-comment">// pfadd：添加用户到HyperLogLog（自动去重）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">pfadd</span>(uvKey, userId);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;记录访问用户成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /uv/count</span><br><span class="hljs-comment"> * 功能：获取当月网站UV（去重后的访问人数）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/uv/count&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-comment">// pfcount：统计基数（UV数，误差约0.81%）</span><br>  <span class="hljs-keyword">const</span> uvCount = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">pfcount</span>(uvKey);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: &#123; <span class="hljs-attr">month</span>: <span class="hljs-string">&#x27;2025年06月&#x27;</span>, <span class="hljs-attr">uvCount</span>: <span class="hljs-built_in">parseInt</span>(uvCount) &#125;<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="8-Geo（地理位置）"><a href="#8-Geo（地理位置）" class="headerlink" title="8. Geo（地理位置）"></a>8. Geo（地理位置）</h4><p><strong>核心场景</strong>：附近的商家&#x2F;附近的人<br><strong>核心API</strong>：<code>geoadd/georadius/geodist</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 商家位置key</span><br><span class="hljs-keyword">const</span> geoKey = <span class="hljs-string">&#x27;geo:merchant&#x27;</span>;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口1：POST /geo/add</span><br><span class="hljs-comment"> * 功能：添加商家地理位置</span><br><span class="hljs-comment"> * 请求体：&#123; merchantId: &#x27;m001&#x27;, lng: 116.403963, lat: 39.915119, name: &#x27;北京王府井店&#x27; &#125;</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/geo/add&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; merchantId, lng, lat, name &#125; = ctx.<span class="hljs-property">request</span>.<span class="hljs-property">body</span>;<br>  <span class="hljs-comment">// geoadd：添加地理位置（key, 经度, 纬度, 成员ID）</span><br>  <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">geoadd</span>(geoKey, lng, lat, <span class="hljs-string">`<span class="hljs-subst">$&#123;merchantId&#125;</span>:<span class="hljs-subst">$&#123;name&#125;</span>`</span>);<br><br>  ctx.<span class="hljs-property">body</span> = &#123; <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;商家位置添加成功&#x27;</span> &#125;;<br>&#125;);<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 接口2：GET /geo/near/:lng/:lat/:radius</span><br><span class="hljs-comment"> * 功能：获取附近的商家（radius为半径，单位米）</span><br><span class="hljs-comment"> */</span><br>router.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/geo/near/:lng/:lat/:radius&#x27;</span>, <span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>  <span class="hljs-keyword">const</span> &#123; lng, lat, radius &#125; = ctx.<span class="hljs-property">params</span>;<br>  <span class="hljs-keyword">const</span> radiusNum = <span class="hljs-built_in">parseInt</span>(radius);<br><br>  <span class="hljs-comment">// georadius：根据经纬度找附近的成员</span><br>  <span class="hljs-comment">// WITHDIST：返回距离（米），WITHCOORD：返回经纬度，ASC：按距离升序</span><br>  <span class="hljs-keyword">const</span> nearMerchants = <span class="hljs-keyword">await</span> redis.<span class="hljs-title function_">georadius</span>(<br>    geoKey,<br>    lng,<br>    lat,<br>    radiusNum,<br>    <span class="hljs-string">&#x27;m&#x27;</span>, <span class="hljs-comment">// 单位：m(米)/km(千米)/mi(英里)/ft(英尺)</span><br>    <span class="hljs-string">&#x27;WITHDIST&#x27;</span>,<br>    <span class="hljs-string">&#x27;WITHCOORD&#x27;</span>,<br>    <span class="hljs-string">&#x27;ASC&#x27;</span><br>  );<br><br>  <span class="hljs-comment">// 格式转换</span><br>  <span class="hljs-keyword">const</span> formatMerchants = nearMerchants.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> &#123;<br>    <span class="hljs-keyword">const</span> [idName, dist, [lng, lat]] = item;<br>    <span class="hljs-keyword">const</span> [merchantId, name] = idName.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;:&#x27;</span>);<br>    <span class="hljs-keyword">return</span> &#123;<br>      merchantId,<br>      name,<br>      <span class="hljs-attr">distance</span>: <span class="hljs-string">`<span class="hljs-subst">$&#123;<span class="hljs-built_in">parseFloat</span>(dist).toFixed(<span class="hljs-number">2</span>)&#125;</span>米`</span>,<br>      <span class="hljs-attr">location</span>: &#123; lng, lat &#125;<br>    &#125;;<br>  &#125;);<br><br>  ctx.<span class="hljs-property">body</span> = &#123;<br>    <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>    <span class="hljs-attr">data</span>: formatMerchants<br>  &#125;;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h3 id="三、补充说明"><a href="#三、补充说明" class="headerlink" title="三、补充说明"></a>三、补充说明</h3><ol>
+<li><strong>请求体解析</strong>：上述POST接口需配合 <code>koa-body</code> 解析JSON请求体，安装后在 <code>app.js</code> 中添加：<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> &#123; koaBody &#125; = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa-body&#x27;</span>);<br>app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">koaBody</span>()); <span class="hljs-comment">// 放在路由挂载前</span><br></code></pre></td></tr></table></figure></li>
+<li><strong>Redis异常处理</strong>：生产环境需给每个Redis操作加try&#x2F;catch，避免单个接口失败导致服务崩溃；</li>
+<li><strong>性能优化</strong>：批量操作建议用 <code>pipeline</code>，例如批量添加商家位置：<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> pipeline = redis.<span class="hljs-title function_">pipeline</span>();<br>pipeline.<span class="hljs-title function_">geoadd</span>(geoKey, <span class="hljs-number">116.40</span>, <span class="hljs-number">39.91</span>, <span class="hljs-string">&#x27;m001:北京店&#x27;</span>);<br>pipeline.<span class="hljs-title function_">geoadd</span>(geoKey, <span class="hljs-number">116.41</span>, <span class="hljs-number">39.92</span>, <span class="hljs-string">&#x27;m002:北京西单店&#x27;</span>);<br><span class="hljs-keyword">await</span> pipeline.<span class="hljs-title function_">exec</span>();<br></code></pre></td></tr></table></figure></li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Redis/" class="category-chain-item">Redis</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Redis/">#Redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>初始化npm项目</div>
+      <div>https://zjw93615.github.io/2025/12/06/Redis/Redis 数据结构/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/React_Vue/Vue%20Composition%20API%20%E4%B8%8E%20React%20Hooks%20%E6%B7%B1%E5%BA%A6%E5%AF%B9%E6%AF%94/" title="Vue Composition API 与 React Hooks 深度对比">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Vue Composition API 与 React Hooks 深度对比</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/%E5%AE%89%E5%85%A8/XSS/" title="XSS攻击">
+                        <span class="hidden-mobile">XSS攻击</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

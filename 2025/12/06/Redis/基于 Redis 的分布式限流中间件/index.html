@@ -1,0 +1,685 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/logo.png">
+  <link rel="icon" href="/img/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="嘉炜">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="基于 Redis 的分布式限流中间件（解决 Koa 集群限流失效问题）在集群部署场景下，单机内存版限流中间件会因各节点独立维护令牌桶导致限流规则失效（如集群3节点，单节点限流100次&#x2F;分钟，实际总限流300次&#x2F;分钟）。基于 Redis 的分布式限流通过共享令牌桶状态 + Lua 原子脚本 解决该问题，保证集群所有节点的限流规则统一。 一、核心设计思路 令牌桶算法迁移到 Redi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于 Redis 的分布式限流中间件">
+<meta property="og:url" content="https://zjw93615.github.io/2025/12/06/Redis/%E5%9F%BA%E4%BA%8E%20Redis%20%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81%E4%B8%AD%E9%97%B4%E4%BB%B6/index.html">
+<meta property="og:site_name" content="嘉炜的技术空间">
+<meta property="og:description" content="基于 Redis 的分布式限流中间件（解决 Koa 集群限流失效问题）在集群部署场景下，单机内存版限流中间件会因各节点独立维护令牌桶导致限流规则失效（如集群3节点，单节点限流100次&#x2F;分钟，实际总限流300次&#x2F;分钟）。基于 Redis 的分布式限流通过共享令牌桶状态 + Lua 原子脚本 解决该问题，保证集群所有节点的限流规则统一。 一、核心设计思路 令牌桶算法迁移到 Redi">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-06T13:18:21.000Z">
+<meta property="article:modified_time" content="2025-12-06T13:54:57.209Z">
+<meta property="article:author" content="嘉炜">
+<meta property="article:tag" content="Koa">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>基于 Redis 的分布式限流中间件 - 嘉炜的技术空间</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zjw93615.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>嘉炜的技术空间</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="基于 Redis 的分布式限流中间件"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-06 21:18" pubdate>
+          2025年12月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          75 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">基于 Redis 的分布式限流中间件</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="基于-Redis-的分布式限流中间件（解决-Koa-集群限流失效问题）"><a href="#基于-Redis-的分布式限流中间件（解决-Koa-集群限流失效问题）" class="headerlink" title="基于 Redis 的分布式限流中间件（解决 Koa 集群限流失效问题）"></a>基于 Redis 的分布式限流中间件（解决 Koa 集群限流失效问题）</h3><p>在集群部署场景下，单机内存版限流中间件会因各节点独立维护令牌桶导致限流规则失效（如集群3节点，单节点限流100次&#x2F;分钟，实际总限流300次&#x2F;分钟）。基于 Redis 的分布式限流通过<strong>共享令牌桶状态</strong> + <strong>Lua 原子脚本</strong> 解决该问题，保证集群所有节点的限流规则统一。</p>
+<h2 id="一、核心设计思路"><a href="#一、核心设计思路" class="headerlink" title="一、核心设计思路"></a>一、核心设计思路</h2><ol>
+<li><strong>令牌桶算法迁移到 Redis</strong>：用 Redis Hash 存储令牌桶状态（令牌数、最后补充时间），所有节点共享同一状态；</li>
+<li><strong>Lua 脚本保证原子性</strong>：补充令牌 + 消耗令牌的操作在 Redis 端原子执行，避免多节点并发操作导致的令牌数不一致；</li>
+<li><strong>Redis 连接池</strong>：使用 ioredis 连接池，适配高并发场景；</li>
+<li><strong>容错处理</strong>：Redis 连接失败时降级为单机限流（避免服务不可用）；</li>
+<li><strong>过期清理</strong>：为 Redis 键设置过期时间，避免内存溢出。</li>
+</ol>
+<h2 id="二、实现步骤（完整代码）"><a href="#二、实现步骤（完整代码）" class="headerlink" title="二、实现步骤（完整代码）"></a>二、实现步骤（完整代码）</h2><h3 id="1-安装依赖"><a href="#1-安装依赖" class="headerlink" title="1. 安装依赖"></a>1. 安装依赖</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">npm install ioredis koa <span class="hljs-comment"># ioredis 支持Promise/连接池/Lua脚本</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-分布式限流中间件代码（企业级规范）"><a href="#2-分布式限流中间件代码（企业级规范）" class="headerlink" title="2. 分布式限流中间件代码（企业级规范）"></a>2. 分布式限流中间件代码（企业级规范）</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 基于Redis的分布式令牌桶限流中间件（src/middleware/redisRateLimit.js）</span><br><span class="hljs-comment"> * 特性：集群共享令牌桶、Lua原子操作、Redis降级、白名单、过期清理</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Redis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;ioredis&#x27;</span>);<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">RedisTokenBucketRateLimit</span> &#123;<br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * 构造函数</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">Object</span>&#125; options 配置项</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">Object</span>&#125; options.redis Redis连接配置（host/port/password/db）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">number</span>&#125; options.capacity 令牌桶最大容量（默认100）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">number</span>&#125; options.refillRate 令牌补充速率（个/秒，默认10）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">string</span>&#125; options.limitKey 限流维度（ip/userId，默认ip）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">Array</span>&#125; options.whiteList 白名单（IP/用户ID，默认[]）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">string</span>&#125; options.errorMsg 限流提示（默认&quot;请求过于频繁，请稍后再试&quot;）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">number</span>&#125; options.keyExpire 令牌桶Redis键过期时间（秒，默认3600）</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">options = &#123;&#125;</span>) &#123;<br>    <span class="hljs-comment">// 合并默认配置</span><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span> = &#123;<br>      <span class="hljs-attr">redis</span>: &#123;<br>        <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;localhost&#x27;</span>,<br>        <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span>,<br>        <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;&#x27;</span>,<br>        <span class="hljs-attr">db</span>: <span class="hljs-number">0</span>,<br>        <span class="hljs-attr">connectTimeout</span>: <span class="hljs-number">5000</span> <span class="hljs-comment">// 连接超时时间</span><br>      &#125;,<br>      <span class="hljs-attr">capacity</span>: <span class="hljs-number">100</span>,<br>      <span class="hljs-attr">refillRate</span>: <span class="hljs-number">10</span>,<br>      <span class="hljs-attr">limitKey</span>: <span class="hljs-string">&#x27;ip&#x27;</span>,<br>      <span class="hljs-attr">whiteList</span>: [],<br>      <span class="hljs-attr">errorMsg</span>: <span class="hljs-string">&#x27;请求过于频繁，请稍后再试&#x27;</span>,<br>      <span class="hljs-attr">keyExpire</span>: <span class="hljs-number">3600</span>,<br>      ...options<br>    &#125;;<br><br>    <span class="hljs-comment">// 初始化Redis客户端（连接池）</span><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">redis</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>(&#123;<br>      ...<span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">redis</span>,<br>      <span class="hljs-attr">retryStrategy</span>: <span class="hljs-function">(<span class="hljs-params">times</span>) =&gt;</span> &#123;<br>        <span class="hljs-comment">// 重试策略：失败后重试，间隔递增（避免频繁重试）</span><br>        <span class="hljs-keyword">const</span> delay = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(times * <span class="hljs-number">100</span>, <span class="hljs-number">3000</span>);<br>        <span class="hljs-keyword">return</span> delay;<br>      &#125;<br>    &#125;);<br><br>    <span class="hljs-comment">// 监听Redis连接错误</span><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">redis</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> &#123;<br>      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;[Redis限流中间件] 连接失败，降级为单机限流:&#x27;</span>, err.<span class="hljs-property">message</span>);<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">redisAvailable</span> = <span class="hljs-literal">false</span>;<br>      <span class="hljs-comment">// 初始化单机令牌桶（降级方案）</span><br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">localBuckets</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>();<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">startLocalRefillTimer</span>();<br>    &#125;);<br><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">redis</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;connect&#x27;</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;[Redis限流中间件] Redis连接成功&#x27;</span>);<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">redisAvailable</span> = <span class="hljs-literal">true</span>;<br>    &#125;);<br><br>    <span class="hljs-comment">// Lua脚本：原子执行「补充令牌 + 消耗令牌」（核心！）</span><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">luaScript</span> = <span class="hljs-string">`</span><br><span class="hljs-string">      -- 获取配置参数</span><br><span class="hljs-string">      local capacity = tonumber(ARGV[1])</span><br><span class="hljs-string">      local refillRate = tonumber(ARGV[2])</span><br><span class="hljs-string">      local now = tonumber(ARGV[3])</span><br><span class="hljs-string">      local keyExpire = tonumber(ARGV[4])</span><br><span class="hljs-string"></span><br><span class="hljs-string">      -- 获取令牌桶当前状态（hash: &#123;tokens, lastRefillTime&#125;）</span><br><span class="hljs-string">      local bucket = redis.call(&#x27;HMGET&#x27;, KEYS[1], &#x27;tokens&#x27;, &#x27;lastRefillTime&#x27;)</span><br><span class="hljs-string">      local tokens = tonumber(bucket[1]) or capacity -- 初始令牌=桶容量</span><br><span class="hljs-string">      local lastRefillTime = tonumber(bucket[2]) or now -- 初始时间=当前时间</span><br><span class="hljs-string"></span><br><span class="hljs-string">      -- 计算自上次补充的时间差（秒）</span><br><span class="hljs-string">      local timeDiff = math.max(0, now - lastRefillTime) / 1000</span><br><span class="hljs-string">      -- 补充令牌（不超过桶容量）</span><br><span class="hljs-string">      tokens = math.min(capacity, tokens + timeDiff * refillRate)</span><br><span class="hljs-string"></span><br><span class="hljs-string">      -- 尝试消耗1个令牌</span><br><span class="hljs-string">      local allowed = 1</span><br><span class="hljs-string">      if tokens &gt;= 1 then</span><br><span class="hljs-string">        tokens = tokens - 1</span><br><span class="hljs-string">        allowed = 1</span><br><span class="hljs-string">      else</span><br><span class="hljs-string">        allowed = 0</span><br><span class="hljs-string">      end</span><br><span class="hljs-string"></span><br><span class="hljs-string">      -- 更新令牌桶状态到Redis，并设置过期时间</span><br><span class="hljs-string">      redis.call(&#x27;HMSET&#x27;, KEYS[1], &#x27;tokens&#x27;, tokens, &#x27;lastRefillTime&#x27;, now)</span><br><span class="hljs-string">      redis.call(&#x27;EXPIRE&#x27;, KEYS[1], keyExpire)</span><br><span class="hljs-string"></span><br><span class="hljs-string">      -- 返回结果：是否允许请求、剩余令牌数</span><br><span class="hljs-string">      return &#123;allowed, tokens&#125;</span><br><span class="hljs-string">    `</span>;<br><br>    <span class="hljs-comment">// 加载Lua脚本到Redis（缓存脚本SHA1，避免重复传输）</span><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">scriptSha</span> = <span class="hljs-literal">null</span>;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">loadLuaScript</span>();<br>  &#125;<br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * 加载Lua脚本到Redis，获取脚本SHA1值</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-keyword">async</span> <span class="hljs-title function_">loadLuaScript</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">if</span> (!<span class="hljs-variable language_">this</span>.<span class="hljs-property">redisAvailable</span>) <span class="hljs-keyword">return</span>;<br>    <span class="hljs-keyword">try</span> &#123;<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">scriptSha</span> = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">redis</span>.<span class="hljs-title function_">script</span>(<span class="hljs-string">&#x27;LOAD&#x27;</span>, <span class="hljs-variable language_">this</span>.<span class="hljs-property">luaScript</span>);<br>    &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;[Redis限流中间件] 加载Lua脚本失败:&#x27;</span>, err.<span class="hljs-property">message</span>);<br>    &#125;<br>  &#125;<br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * 获取限流维度的Key（IP/用户ID）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">Object</span>&#125; ctx Koa上下文</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@returns</span> &#123;<span class="hljs-type">string</span>&#125; 限流Key</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-title function_">getLimitKey</span>(<span class="hljs-params">ctx</span>) &#123;<br>    <span class="hljs-keyword">let</span> key;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">limitKey</span> === <span class="hljs-string">&#x27;ip&#x27;</span>) &#123;<br>      key = ctx.<span class="hljs-property">ip</span>;<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">limitKey</span> === <span class="hljs-string">&#x27;userId&#x27;</span>) &#123;<br>      <span class="hljs-comment">// 假设用户ID存储在ctx.state.user.id（需提前通过鉴权中间件设置）</span><br>      key = ctx.<span class="hljs-property">state</span>.<span class="hljs-property">user</span>?.<span class="hljs-property">id</span> || ctx.<span class="hljs-property">ip</span>;<br>    &#125;<br>    <span class="hljs-comment">// 拼接前缀，避免Redis键冲突</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-string">`rate_limit:<span class="hljs-subst">$&#123;<span class="hljs-variable language_">this</span>.options.limitKey&#125;</span>:<span class="hljs-subst">$&#123;key&#125;</span>`</span>;<br>  &#125;<br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * Redis版本：尝试消耗令牌（原子操作）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">string</span>&#125; key 限流Key</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@returns</span> &#123;<span class="hljs-type">Promise&lt;boolean&gt;</span>&#125; 是否允许请求</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-keyword">async</span> <span class="hljs-title function_">tryConsumeRedis</span>(<span class="hljs-params">key</span>) &#123;<br>    <span class="hljs-keyword">if</span> (!<span class="hljs-variable language_">this</span>.<span class="hljs-property">redisAvailable</span> || !<span class="hljs-variable language_">this</span>.<span class="hljs-property">scriptSha</span>) &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">tryConsumeLocal</span>(key); <span class="hljs-comment">// 降级为单机限流</span><br>    &#125;<br><br>    <span class="hljs-keyword">try</span> &#123;<br>      <span class="hljs-comment">// 执行Lua脚本（KEYS: [限流Key]，ARGV: [容量, 速率, 当前时间, 过期时间]）</span><br>      <span class="hljs-keyword">const</span> [allowed] = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">redis</span>.evalsha(<br>        <span class="hljs-variable language_">this</span>.<span class="hljs-property">scriptSha</span>,<br>        <span class="hljs-number">1</span>, <span class="hljs-comment">// KEYS数组长度</span><br>        key,<br>        <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">capacity</span>,<br>        <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">refillRate</span>,<br>        <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>(),<br>        <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">keyExpire</span><br>      );<br>      <span class="hljs-keyword">return</span> allowed === <span class="hljs-number">1</span>;<br>    &#125; <span class="hljs-keyword">catch</span> (err) &#123;<br>      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;[Redis限流中间件] 执行Lua脚本失败，降级为单机限流:&#x27;</span>, err.<span class="hljs-property">message</span>);<br>      <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">tryConsumeLocal</span>(key);<br>    &#125;<br>  &#125;<br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * 单机降级版本：尝试消耗令牌（同之前的单机逻辑）</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> &#123;<span class="hljs-type">string</span>&#125; key 限流Key</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@returns</span> &#123;<span class="hljs-type">boolean</span>&#125; 是否允许请求</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-title function_">tryConsumeLocal</span>(<span class="hljs-params">key</span>) &#123;<br>    <span class="hljs-comment">// 初始化单机令牌桶</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-variable language_">this</span>.<span class="hljs-property">localBuckets</span>.<span class="hljs-title function_">has</span>(key)) &#123;<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">localBuckets</span>.<span class="hljs-title function_">set</span>(key, &#123;<br>        <span class="hljs-attr">tokens</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">capacity</span>,<br>        <span class="hljs-attr">lastRefillTime</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>()<br>      &#125;);<br>    &#125;<br>    <span class="hljs-keyword">const</span> bucket = <span class="hljs-variable language_">this</span>.<span class="hljs-property">localBuckets</span>.<span class="hljs-title function_">get</span>(key);<br>    <span class="hljs-comment">// 补充令牌</span><br>    <span class="hljs-keyword">const</span> timeDiff = (<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - bucket.<span class="hljs-property">lastRefillTime</span>) / <span class="hljs-number">1000</span>;<br>    bucket.<span class="hljs-property">tokens</span> = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">capacity</span>, bucket.<span class="hljs-property">tokens</span> + timeDiff * <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">refillRate</span>);<br>    bucket.<span class="hljs-property">lastRefillTime</span> = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>    <span class="hljs-comment">// 消耗令牌</span><br>    <span class="hljs-keyword">if</span> (bucket.<span class="hljs-property">tokens</span> &gt;= <span class="hljs-number">1</span>) &#123;<br>      bucket.<span class="hljs-property">tokens</span> -= <span class="hljs-number">1</span>;<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>  &#125;<br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * 单机版本：定时补充令牌（每秒执行）</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-title function_">startLocalRefillTimer</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">localRefillTimer</span>) <span class="hljs-keyword">return</span>;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">localRefillTimer</span> = <span class="hljs-built_in">setInterval</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>      <span class="hljs-keyword">const</span> now = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, bucket] <span class="hljs-keyword">of</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">localBuckets</span>) &#123;<br>        <span class="hljs-keyword">const</span> timeDiff = (now - bucket.<span class="hljs-property">lastRefillTime</span>) / <span class="hljs-number">1000</span>;<br>        bucket.<span class="hljs-property">tokens</span> = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">capacity</span>, bucket.<span class="hljs-property">tokens</span> + timeDiff * <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">refillRate</span>);<br>        bucket.<span class="hljs-property">lastRefillTime</span> = now;<br>      &#125;<br>    &#125;, <span class="hljs-number">1000</span>);<br>  &#125;<br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * 中间件核心逻辑</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@returns</span> &#123;<span class="hljs-type">Function</span>&#125; Koa中间件</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-title function_">middleware</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">async</span> (ctx, next) =&gt; &#123;<br>      <span class="hljs-comment">// 1. 获取限流Key</span><br>      <span class="hljs-keyword">const</span> limitKey = <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">getLimitKey</span>(ctx);<br><br>      <span class="hljs-comment">// 2. 白名单跳过限流</span><br>      <span class="hljs-keyword">const</span> rawKey = limitKey.<span class="hljs-title function_">replace</span>(<span class="hljs-string">`rate_limit:<span class="hljs-subst">$&#123;<span class="hljs-variable language_">this</span>.options.limitKey&#125;</span>:`</span>, <span class="hljs-string">&#x27;&#x27;</span>);<br>      <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">whiteList</span>.<span class="hljs-title function_">includes</span>(rawKey)) &#123;<br>        <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>        <span class="hljs-keyword">return</span>;<br>      &#125;<br><br>      <span class="hljs-comment">// 3. 尝试消耗令牌</span><br>      <span class="hljs-keyword">const</span> allowed = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">tryConsumeRedis</span>(limitKey);<br>      <span class="hljs-keyword">if</span> (!allowed) &#123;<br>        ctx.<span class="hljs-property">status</span> = <span class="hljs-number">429</span>; <span class="hljs-comment">// 429 Too Many Requests</span><br>        ctx.<span class="hljs-property">body</span> = &#123;<br>          <span class="hljs-attr">code</span>: <span class="hljs-number">429</span>,<br>          <span class="hljs-attr">msg</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">options</span>.<span class="hljs-property">errorMsg</span>,<br>          <span class="hljs-attr">data</span>: <span class="hljs-literal">null</span><br>        &#125;;<br>        <span class="hljs-keyword">return</span>;<br>      &#125;<br><br>      <span class="hljs-comment">// 4. 允许请求，执行后续逻辑</span><br>      <span class="hljs-keyword">await</span> <span class="hljs-title function_">next</span>();<br>    &#125;;<br>  &#125;<br><br>  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * 关闭Redis连接（应用退出时调用）</span><br><span class="hljs-comment">   */</span><br>  <span class="hljs-title function_">close</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">redis</span>) &#123;<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">redis</span>.<span class="hljs-title function_">quit</span>();<br>    &#125;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">localRefillTimer</span>) &#123;<br>      <span class="hljs-built_in">clearInterval</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">localRefillTimer</span>);<br>    &#125;<br>  &#125;<br>&#125;<br><br><span class="hljs-comment">// 导出便捷使用的函数</span><br><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = <span class="hljs-function">(<span class="hljs-params">options</span>) =&gt;</span> &#123;<br>  <span class="hljs-keyword">const</span> rateLimit = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisTokenBucketRateLimit</span>(options);<br>  <span class="hljs-comment">// 应用退出时关闭连接（防止内存泄漏）</span><br>  process.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;exit&#x27;</span>, <span class="hljs-function">() =&gt;</span> rateLimit.<span class="hljs-title function_">close</span>());<br>  <span class="hljs-keyword">return</span> rateLimit.<span class="hljs-title function_">middleware</span>();<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-使用示例（集群部署下的-Koa-应用）"><a href="#3-使用示例（集群部署下的-Koa-应用）" class="headerlink" title="3. 使用示例（集群部署下的 Koa 应用）"></a>3. 使用示例（集群部署下的 Koa 应用）</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 入口文件（src/app.js）</span><br><span class="hljs-comment"> * 集群部署场景：多节点共享Redis限流规则</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">const</span> <span class="hljs-title class_">Koa</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;koa&#x27;</span>);<br><span class="hljs-keyword">const</span> cluster = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;cluster&#x27;</span>);<br><span class="hljs-keyword">const</span> numCPUs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;os&#x27;</span>).<span class="hljs-title function_">cpus</span>().<span class="hljs-property">length</span>;<br><span class="hljs-keyword">const</span> redisRateLimit = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./middleware/redisRateLimit&#x27;</span>);<br><br><span class="hljs-comment">// 集群主进程：启动多个工作进程</span><br><span class="hljs-keyword">if</span> (cluster.<span class="hljs-property">isPrimary</span>) &#123;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`主进程 <span class="hljs-subst">$&#123;process.pid&#125;</span> 启动`</span>);<br>  <span class="hljs-comment">// 启动与CPU核心数相同的工作进程</span><br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; numCPUs; i++) &#123;<br>    cluster.<span class="hljs-title function_">fork</span>();<br>  &#125;<br>  <span class="hljs-comment">// 工作进程退出时重启</span><br>  cluster.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;exit&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">worker</span>) =&gt;</span> &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`工作进程 <span class="hljs-subst">$&#123;worker.process.pid&#125;</span> 退出，重启中...`</span>);<br>    cluster.<span class="hljs-title function_">fork</span>();<br>  &#125;);<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>  <span class="hljs-comment">// 工作进程：创建Koa应用</span><br>  <span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Koa</span>();<br><br>  <span class="hljs-comment">// 注册分布式限流中间件（全局限流，也可按模块注册）</span><br>  app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">redisRateLimit</span>(&#123;<br>    <span class="hljs-attr">redis</span>: &#123;<br>      <span class="hljs-attr">host</span>: <span class="hljs-string">&#x27;192.168.1.100&#x27;</span>, <span class="hljs-comment">// 集群Redis地址（建议用Redis集群/哨兵）</span><br>      <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span>,<br>      <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;your-redis-password&#x27;</span>,<br>      <span class="hljs-attr">db</span>: <span class="hljs-number">1</span><br>    &#125;,<br>    <span class="hljs-attr">capacity</span>: <span class="hljs-number">50</span>, <span class="hljs-comment">// 令牌桶容量50</span><br>    <span class="hljs-attr">refillRate</span>: <span class="hljs-number">5</span>, <span class="hljs-comment">// 每秒补充5个令牌</span><br>    <span class="hljs-attr">limitKey</span>: <span class="hljs-string">&#x27;userId&#x27;</span>, <span class="hljs-comment">// 按用户ID限流</span><br>    <span class="hljs-attr">whiteList</span>: [<span class="hljs-string">&#x27;admin_123&#x27;</span>], <span class="hljs-comment">// 管理员用户ID白名单</span><br>    <span class="hljs-attr">keyExpire</span>: <span class="hljs-number">1800</span> <span class="hljs-comment">// Redis键30分钟过期</span><br>  &#125;));<br><br>  <span class="hljs-comment">// 测试接口</span><br>  app.<span class="hljs-title function_">use</span>(<span class="hljs-keyword">async</span> (ctx) =&gt; &#123;<br>    <span class="hljs-keyword">if</span> (ctx.<span class="hljs-property">path</span> === <span class="hljs-string">&#x27;/api/order/create&#x27;</span>) &#123;<br>      <span class="hljs-comment">// 模拟设置用户ID（实际需从Token解析）</span><br>      ctx.<span class="hljs-property">state</span>.<span class="hljs-property">user</span> = &#123; <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;user_456&#x27;</span> &#125;;<br>      ctx.<span class="hljs-property">body</span> = &#123;<br>        <span class="hljs-attr">code</span>: <span class="hljs-number">200</span>,<br>        <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;订单创建成功&#x27;</span>,<br>        <span class="hljs-attr">data</span>: &#123; <span class="hljs-attr">orderId</span>: <span class="hljs-string">`order_<span class="hljs-subst">$&#123;<span class="hljs-built_in">Date</span>.now()&#125;</span>`</span> &#125;<br>      &#125;;<br>    &#125;<br>  &#125;);<br><br>  <span class="hljs-comment">// 启动工作进程</span><br>  <span class="hljs-keyword">const</span> <span class="hljs-variable constant_">PORT</span> = <span class="hljs-number">3000</span> + (process.<span class="hljs-property">pid</span> % numCPUs); <span class="hljs-comment">// 每个进程占用不同端口（或用反向代理）</span><br>  app.<span class="hljs-title function_">listen</span>(<span class="hljs-variable constant_">PORT</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`工作进程 <span class="hljs-subst">$&#123;process.pid&#125;</span> 启动，监听端口 <span class="hljs-subst">$&#123;PORT&#125;</span>`</span>);<br>  &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="三、核心要点说明"><a href="#三、核心要点说明" class="headerlink" title="三、核心要点说明"></a>三、核心要点说明</h2><h3 id="1-Lua-脚本的必要性"><a href="#1-Lua-脚本的必要性" class="headerlink" title="1. Lua 脚本的必要性"></a>1. Lua 脚本的必要性</h3><p>Redis 是单线程执行 Lua 脚本，确保「补充令牌 + 消耗令牌」的操作原子化，避免集群多节点并发操作时：</p>
+<ul>
+<li>节点A读取令牌数&#x3D;1，节点B同时读取令牌数&#x3D;1；</li>
+<li>两节点都消耗令牌，最终令牌数&#x3D;-1（逻辑错误）。</li>
+</ul>
+<h3 id="2-降级策略"><a href="#2-降级策略" class="headerlink" title="2. 降级策略"></a>2. 降级策略</h3><p>当 Redis 连接失败（如网络故障、Redis 宕机），自动降级为单机限流，避免服务完全不可用，符合企业级「熔断降级」的高可用要求。</p>
+<h3 id="3-集群部署适配"><a href="#3-集群部署适配" class="headerlink" title="3. 集群部署适配"></a>3. 集群部署适配</h3><ul>
+<li>每个 Koa 工作进程连接同一个 Redis 实例，共享令牌桶状态；</li>
+<li>反向代理（如 Nginx）将请求分发到不同 Koa 节点，所有节点的限流规则统一；</li>
+<li>生产环境建议使用 Redis 集群&#x2F;哨兵，避免 Redis 单点故障。</li>
+</ul>
+<h3 id="4-性能优化"><a href="#4-性能优化" class="headerlink" title="4. 性能优化"></a>4. 性能优化</h3><ul>
+<li>Redis 连接池：复用连接，避免频繁创建&#x2F;关闭连接；</li>
+<li>Lua 脚本缓存：通过 <code>script load</code> 缓存脚本 SHA1 值，减少网络传输；</li>
+<li>过期键清理：为 Redis 键设置过期时间，避免无用键占用内存。</li>
+</ul>
+<h2 id="四、测试验证（集群场景）"><a href="#四、测试验证（集群场景）" class="headerlink" title="四、测试验证（集群场景）"></a>四、测试验证（集群场景）</h2><ol>
+<li>启动 Redis 服务（确保集群所有节点可访问）；</li>
+<li>启动 Koa 集群应用（多工作进程）；</li>
+<li>用压测工具（如 ab、wrk）向不同端口的 Koa 节点发送请求：<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 压测命令：向两个节点发送100次请求</span><br>wrk -t10 -c10 -d10s http://localhost:3000/api/order/create<br>wrk -t10 -c10 -d10s http://localhost:3001/api/order/create<br></code></pre></td></tr></table></figure></li>
+<li>验证结果：两个节点的总请求数不会超过令牌桶的限流规则（如50次&#x2F;10秒），实现集群统一限流。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Redis/" class="category-chain-item">Redis</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Koa/">#Koa</a>
+      
+        <a href="/tags/Redis/">#Redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>基于 Redis 的分布式限流中间件</div>
+      <div>https://zjw93615.github.io/2025/12/06/Redis/基于 Redis 的分布式限流中间件/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>嘉炜</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/06/Koa/koa%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%92%8C%E6%89%8B%E5%8A%A8%E5%AE%9E%E7%8E%B0%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%9E%E6%88%98/" title="koa常用中间件和手动实现中间件实战">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">koa常用中间件和手动实现中间件实战</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/06/Redis/Redis%E7%9F%A5%E8%AF%86%E7%82%B9/" title="加锁：key=lockKey，value=唯一标识（如UUID），nx（不存在才设置），ex（过期时间）">
+                        <span class="hidden-mobile">加锁：key=lockKey，value=唯一标识（如UUID），nx（不存在才设置），ex（过期时间）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
